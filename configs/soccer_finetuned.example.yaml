@@ -1,0 +1,22 @@
+# Example for a YOLO model fine-tuned on soccer footage, e.g. one trained on
+# a dataset with classes {ball, goalkeeper, player, referee}. Adjust `weights`
+# and `classes` to match YOUR model's class names (printed in the error message
+# if a name is wrong). Only keys that differ from the defaults are listed.
+
+players:
+  detector:
+    weights: weights/football-player-detection.pt
+    classes: [player, goalkeeper]   # add "referee" if you want referees tracked too
+    confidence: 0.15
+  filter:
+    use_pitch_mask: false           # a soccer-specific model rarely fires on the crowd
+
+ball:
+  detector:
+    weights: weights/football-ball-detection.pt
+    classes: [ball]
+    confidence: 0.15
+    tiling:
+      enabled: true
+      tile_size: 640
+      overlap: 0.2

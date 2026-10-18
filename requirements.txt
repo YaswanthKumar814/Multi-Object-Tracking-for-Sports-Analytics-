@@ -1,0 +1,8 @@
+# Runtime dependencies. Install PyTorch FIRST if you want a specific CUDA/CPU build
+# (see README), otherwise ultralytics pulls in the default torch wheel.
+numpy>=1.26
+opencv-python>=4.8
+PyYAML>=6.0
+ultralytics>=8.3,<9      # YOLO detector (AGPL-3.0)
+supervision>=0.26        # Detections container used by `trackers` (MIT)
+trackers>=2.6,<3         # ByteTrack implementation (Apache-2.0)

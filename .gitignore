@@ -1,0 +1,10 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+outputs/
+weights/*
+!weights/.gitkeep
+*.mp4
+*.avi

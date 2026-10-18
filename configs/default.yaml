@@ -1,0 +1,95 @@
+# Default configuration. Every key is optional: anything omitted falls back to
+# the defaults in src/soccer_tracker/config.py. Unknown keys are rejected.
+# Relative paths are resolved against the directory you run the command from.
+
+io:
+  output_video: outputs/annotated.mp4
+  output_csv: outputs/tracks.csv
+  output_summary: outputs/summary.json
+  fourcc: mp4v            # mp4v/avc1 for .mp4, XVID/MJPG for .avi
+  fallback_fps: 25.0      # used only if the video reports no valid FPS
+  max_frames: null        # e.g. 300 for a quick test
+  log_every: 50
+  overwrite: true
+
+players:
+  detector:
+    # Official Ultralytics COCO weights; downloaded automatically on first use
+    # if allow_download is true. Swap for a soccer-specific model for better results.
+    weights: weights/yolo11n.pt
+    classes: [person]
+    confidence: 0.15      # keep below tracker.high_conf_det_threshold so ByteTrack's
+                          # second (low-confidence) association stage has input
+    iou: 0.5
+    imgsz: 1280           # broadcast players are small; 640 misses distant players
+    device: null          # null = auto; "cpu", "0" (first CUDA GPU), "mps"
+    half: false
+    allow_download: true
+    tiling:
+      enabled: false
+  filter:
+    min_height_px: 12
+    max_height_frac: 0.6
+    min_aspect: 0.8       # box height / width
+    max_aspect: 6.0
+    use_pitch_mask: false # true = drop boxes whose feet are not on grass (removes crowd)
+  tracker:                # ByteTrack (Roboflow `trackers` package)
+    track_activation_threshold: 0.5
+    high_conf_det_threshold: 0.5
+    minimum_iou_threshold: 0.1
+    lost_track_buffer: 30
+    minimum_consecutive_frames: 3
+
+ball:
+  enabled: true
+  # Reuse the player YOLO pass when weights/imgsz/device match and tiling is
+  # off (about 2x faster). Set false to always run a separate ball pass.
+  share_player_inference: true
+  detector:
+    # The COCO "sports ball" class is a weak baseline for broadcast footage.
+    # See README "Ball detection" for soccer-specific weights.
+    weights: weights/yolo11n.pt
+    classes: ["sports ball"]
+    confidence: 0.1       # low on purpose: the ball tracker rejects false positives
+    iou: 0.3
+    imgsz: 1280
+    device: null
+    half: false
+    allow_download: true
+    tiling:               # sliced inference; better for tiny balls, ~N times slower
+      enabled: false
+      tile_size: 640
+      overlap: 0.2
+      include_full_frame: true
+  filter:
+    min_size_px: 2
+    max_size_px: 80
+    max_aspect_ratio: 2.0
+    use_pitch_mask: false
+  tracker:                # constant-velocity Kalman single-target tracker
+    gate_px: 80
+    gate_growth_px: 20
+    max_missed_frames: 15
+    min_hits: 2
+    reinit_confidence: 0.5
+    reinit_after_missed: 3
+    process_noise: 4.0
+    measurement_noise: 4.0
+    trajectory_length: 90
+
+pitch_mask:
+  hsv_lower: [30, 40, 40]
+  hsv_upper: [90, 255, 255]
+  dilate_px: 25
+
+visualization:
+  draw_player_boxes: true
+  draw_player_ids: true
+  draw_player_trajectories: true
+  player_trajectory_length: 40
+  draw_ball: true
+  draw_ball_trajectory: true
+  show_predicted_ball: true
+  draw_hud: true
+  line_thickness: 2
+  font_scale: 0.5
