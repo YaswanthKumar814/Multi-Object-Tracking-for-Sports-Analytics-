@@ -1,8 +1,9 @@
-"""Multi-object player tracking with ByteTrack.
+"""Multi-object player tracking.
 
-Uses ``trackers.ByteTrackTracker`` from Roboflow's ``trackers`` package
-(Apache-2.0), the maintained successor of ``supervision.ByteTrack``. The
-third-party API is confined to this file: if it changes, nothing else in the
+ByteTrack (the proposed player tracker) by default; SORT and OC-SORT can be
+selected with ``players.tracker.algorithm`` for baseline comparisons. All three
+come from Roboflow's ``trackers`` package (Apache-2.0). The third-party API is
+confined to this file and ``factory.py``: if it changes, nothing else in the
 project needs to.
 """
 
@@ -13,6 +14,7 @@ import numpy as np
 from ..config import ByteTrackConfig
 from ..detection.base import Detections
 from ..errors import DependencyError
+from .factory import build_mot_tracker
 from .types import DETECTED, PLAYER, TrackedObject
 
 
@@ -20,16 +22,17 @@ class PlayerTracker:
     def __init__(self, cfg: ByteTrackConfig, frame_rate: float):
         try:
             import supervision as sv
-            from trackers import ByteTrackTracker
         except ImportError as exc:
             raise DependencyError(
                 "Player tracking needs the 'trackers' and 'supervision' packages. "
                 "Install dependencies with: pip install -r requirements.txt"
             ) from exc
         self._sv = sv
-        self._tracker = ByteTrackTracker(
+        self.algorithm = cfg.algorithm
+        self._tracker = build_mot_tracker(
+            cfg.algorithm,
+            frame_rate,
             lost_track_buffer=cfg.lost_track_buffer,
-            frame_rate=float(frame_rate),
             track_activation_threshold=cfg.track_activation_threshold,
             minimum_consecutive_frames=cfg.minimum_consecutive_frames,
             minimum_iou_threshold=cfg.minimum_iou_threshold,

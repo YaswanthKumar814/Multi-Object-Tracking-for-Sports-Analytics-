@@ -1,0 +1,104 @@
+{
+  "sequence": "SportsMOT/v_dw7LOz17Omg_c067",
+  "frames": 150,
+  "warmup_frames_excluded": 5,
+  "resolution": "1280x720",
+  "detector": "yolo11n_1280",
+  "system": {
+    "timestamp": "2026-11-12T00:29:56",
+    "platform": "Windows-10-10.0.26200-SP0",
+    "cpu": "Intel(R) Core(TM) 7 150U",
+    "cpu_logical_cores": 12,
+    "python": "3.11.9",
+    "device": "cpu",
+    "cpu_physical_cores": 10,
+    "ram_gb": 15.7,
+    "power_source": "AC power",
+    "cpu_mhz_current": 1800,
+    "torch": "2.14.1+cpu",
+    "torch_threads": 8,
+    "cuda_available": false,
+    "gpu": null,
+    "ultralytics": "8.4.182",
+    "trackers": null,
+    "supervision": "0.31.0",
+    "cv2": "5.0.0",
+    "numpy": "2.4.6",
+    "git_commit": "c60899c"
+  },
+  "tracker_params": {
+    "sort": {
+      "lost_track_buffer": 30,
+      "minimum_consecutive_frames": 1,
+      "minimum_iou_threshold": 0.3,
+      "track_activation_threshold": 0.6,
+      "high_conf_det_threshold": 0.6
+    },
+    "ocsort": {
+      "lost_track_buffer": 60,
+      "minimum_consecutive_frames": 1,
+      "minimum_iou_threshold": 0.3,
+      "track_activation_threshold": 0.3,
+      "high_conf_det_threshold": 0.3
+    },
+    "bytetrack": {
+      "lost_track_buffer": 30,
+      "minimum_consecutive_frames": 1,
+      "minimum_iou_threshold": 0.2,
+      "track_activation_threshold": 0.5,
+      "high_conf_det_threshold": 0.5
+    }
+  },
+  "stages": {
+    "frame reading (JPEG decode)": {
+      "mean_ms": 11.2528,
+      "median_ms": 11.2521,
+      "p95_ms": 14.1089
+    },
+    "detection": {
+      "mean_ms": 293.014,
+      "median_ms": 287.2483,
+      "p95_ms": 366.834
+    },
+    "player filter + SORT": {
+      "mean_ms": 3.5262,
+      "median_ms": 3.5204,
+      "p95_ms": 4.7747
+    },
+    "player filter + OC-SORT": {
+      "mean_ms": 10.5924,
+      "median_ms": 9.8,
+      "p95_ms": 16.665
+    },
+    "player filter + ByteTrack (proposed)": {
+      "mean_ms": 5.8745,
+      "median_ms": 5.5799,
+      "p95_ms": 8.1577
+    },
+    "ball filter + Kalman tracker": {
+      "mean_ms": 0.2911,
+      "median_ms": 0.2983,
+      "p95_ms": 0.651
+    },
+    "drawing annotations": {
+      "mean_ms": 8.9872,
+      "median_ms": 8.6955,
+      "p95_ms": 13.3157
+    },
+    "video encoding (mp4v)": {
+      "mean_ms": 18.5915,
+      "median_ms": 17.3908,
+      "p95_ms": 26.6181
+    }
+  },
+  "full_pipeline_ms_per_frame": {
+    "sort": 328.405,
+    "ocsort": 334.685,
+    "bytetrack": 330.465
+  },
+  "full_pipeline_fps": {
+    "sort": 3.045,
+    "ocsort": 2.988,
+    "bytetrack": 3.026
+  }
+}

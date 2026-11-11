@@ -1,0 +1,9 @@
+stage,mean_ms,median_ms,p95_ms
+frame reading (JPEG decode),11.2528,11.2521,14.1089
+detection,293.014,287.2483,366.834
+player filter + SORT,3.5262,3.5204,4.7747
+player filter + OC-SORT,10.5924,9.8,16.665
+player filter + ByteTrack (proposed),5.8745,5.5799,8.1577
+ball filter + Kalman tracker,0.2911,0.2983,0.651
+drawing annotations,8.9872,8.6955,13.3157
+video encoding (mp4v),18.5915,17.3908,26.6181

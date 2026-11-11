@@ -1,0 +1,145 @@
+{
+  "frames_processed": 241,
+  "elapsed_s": 80.85,
+  "processing_fps": 2.98,
+  "players": {
+    "detections_raw": 6605,
+    "detections_after_filter": 6586,
+    "unique_track_ids": 31,
+    "median_track_length_frames": 209,
+    "tracks_shorter_than_10_frames": 1
+  },
+  "ball": {
+    "candidates_raw": 262,
+    "candidates_after_filter": 259,
+    "frames_detected": 159,
+    "frames_predicted": 40,
+    "frames_lost": 42,
+    "coverage": 0.826,
+    "tracks_started": 3
+  },
+  "input": "data\\raw\\uvy_track\\soccer_V04\\vid__fkPwtg7ozU.mp4",
+  "video": {
+    "width": 1280,
+    "height": 720,
+    "fps": 29.97002997002997,
+    "fps_was_fallback": false,
+    "reported_frame_count": 241
+  },
+  "outputs": {
+    "video": "results\\demo\\uvy_soccer_V04_annotated.mp4",
+    "csv": "results\\demo\\uvy_soccer_V04_tracks.csv",
+    "summary": "results\\demo\\uvy_soccer_V04_summary.json"
+  },
+  "config": {
+    "io": {
+      "output_video": "outputs/annotated.mp4",
+      "output_csv": "outputs/tracks.csv",
+      "output_summary": "outputs/summary.json",
+      "fourcc": "mp4v",
+      "fallback_fps": 25.0,
+      "max_frames": null,
+      "log_every": 50,
+      "overwrite": true
+    },
+    "players": {
+      "detector": {
+        "weights": "weights/yolo11n.pt",
+        "classes": [
+          "person"
+        ],
+        "confidence": 0.15,
+        "iou": 0.5,
+        "imgsz": 1280,
+        "device": "cpu",
+        "half": false,
+        "allow_download": true,
+        "tiling": {
+          "enabled": false,
+          "tile_size": 640,
+          "overlap": 0.2,
+          "include_full_frame": true
+        }
+      },
+      "filter": {
+        "min_height_px": 12.0,
+        "max_height_frac": 0.6,
+        "min_aspect": 0.8,
+        "max_aspect": 6.0,
+        "use_pitch_mask": false
+      },
+      "tracker": {
+        "algorithm": "bytetrack",
+        "track_activation_threshold": 0.5,
+        "high_conf_det_threshold": 0.5,
+        "minimum_iou_threshold": 0.1,
+        "lost_track_buffer": 30,
+        "minimum_consecutive_frames": 3
+      }
+    },
+    "ball": {
+      "enabled": true,
+      "share_player_inference": true,
+      "detector": {
+        "weights": "weights/yolo11n.pt",
+        "classes": [
+          "sports ball"
+        ],
+        "confidence": 0.1,
+        "iou": 0.3,
+        "imgsz": 1280,
+        "device": "cpu",
+        "half": false,
+        "allow_download": true,
+        "tiling": {
+          "enabled": false,
+          "tile_size": 640,
+          "overlap": 0.2,
+          "include_full_frame": true
+        }
+      },
+      "filter": {
+        "min_size_px": 2.0,
+        "max_size_px": 80.0,
+        "max_aspect_ratio": 2.0,
+        "use_pitch_mask": false
+      },
+      "tracker": {
+        "gate_px": 80.0,
+        "gate_growth_px": 20.0,
+        "max_missed_frames": 15,
+        "min_hits": 2,
+        "reinit_confidence": 0.5,
+        "reinit_after_missed": 3,
+        "process_noise": 4.0,
+        "measurement_noise": 4.0,
+        "trajectory_length": 90
+      }
+    },
+    "pitch_mask": {
+      "hsv_lower": [
+        30,
+        40,
+        40
+      ],
+      "hsv_upper": [
+        90,
+        255,
+        255
+      ],
+      "dilate_px": 25
+    },
+    "visualization": {
+      "draw_player_boxes": true,
+      "draw_player_ids": true,
+      "draw_player_trajectories": true,
+      "player_trajectory_length": 40,
+      "draw_ball": true,
+      "draw_ball_trajectory": true,
+      "show_predicted_ball": true,
+      "draw_hud": true,
+      "line_thickness": 2,
+      "font_scale": 0.5
+    }
+  }
+}

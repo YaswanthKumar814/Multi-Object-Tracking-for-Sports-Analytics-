@@ -1,17 +1,29 @@
-# Soccer Player and Ball Tracking
+# Multi-Object Tracking for Sports Analytics (Player and Ball Tracking)
 
-Detects players and the ball in a local soccer video, tracks player identities
-across frames, tracks the ball as a separate component, and writes:
+**Proposed system: YOLO11n + ByteTrack (players) + Kalman filter (ball)**, compared
+against YOLO11n + SORT and YOLO11n + OC-SORT on three public datasets
+(SportsMOT, UVY-Track, InFactory Soccer Ball Tracking).
+
+| Document | Contents |
+|---|---|
+| [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md) | Full report: method, datasets, baseline comparison, metrics, plots, limitations |
+| [DATASETS.md](DATASETS.md) | Dataset sources, formats, the exact subsets used, download commands |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
+| [presentation.pptx](presentation.pptx), [docs/PRESENTATION_NOTES.md](docs/PRESENTATION_NOTES.md) | Slides and speaker notes |
+| [results/](results/) | Metrics (CSV/JSON), plots (PNG), SQLite database, demo outputs |
+
+The application detects players and the ball in a local soccer video, tracks player
+identities across frames, tracks the ball as a separate component, and writes:
 
 - an **annotated video** (boxes, track IDs, player trails, ball marker and trail, status overlay),
 - a **CSV** with one row per tracked object per frame (timestamp, ID, class, confidence, box, centre),
 - a **JSON run summary** (counts, ball coverage, processing speed, the config used).
 
 Built on pretrained models only: Ultralytics YOLO for detection, ByteTrack for player
-tracking, and a Kalman-filter single-target tracker for the ball. No training required
-for the baseline.
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the system design.
+tracking, and a Kalman-filter single-target tracker for the ball. No training is required.
+Ball positions that come from the motion model are always marked `predicted` (orange in
+the video, `status=predicted` and an empty confidence in the CSV); they are never
+presented as detections.
 
 ---
 
@@ -35,6 +47,10 @@ pip install -r requirements-dev.txt
 pip install -e .            # makes `python -m soccer_tracker` / `soccer-tracker` available
 ```
 
+`requirements.txt` covers the application. The experiments, plots and slides
+additionally use `matplotlib`, `scipy`, `huggingface_hub` and `python-pptx`, which
+`requirements-dev.txt` installs.
+
 Check the install:
 
 ```bash
@@ -57,6 +73,7 @@ Useful options:
 | `-c configs/default.yaml` | Use a config file (all keys optional) |
 | `-o out/video.mp4`, `--output-csv`, `--output-summary` | Override output paths |
 | `--max-frames 300` | Process only the first N frames (fast check) |
+| `--tracker bytetrack` / `sort` / `ocsort` | Player tracker: ByteTrack (proposed, default) or a baseline |
 | `--device cpu` / `--device 0` / `--device mps` | Force CPU, first CUDA GPU, or Apple GPU |
 | `--player-weights`, `--ball-weights` | Override weights without editing YAML |
 | `--ball-tiling` | Sliced inference for the ball (better for tiny balls, slower) |
@@ -77,7 +94,7 @@ expect roughly 1–3 FPS at the default `imgsz: 1280`; see Troubleshooting for s
 | `frame` | 0-based frame index |
 | `timestamp_s` | `frame / fps` (seconds) |
 | `object_type` | `player` or `ball` |
-| `track_id` | Player: ByteTrack ID. Ball: ball-track segment ID (increments when the ball is re-acquired after being lost) |
+| `track_id` | Player: tracker ID (ByteTrack by default). Ball: ball-track segment ID (increments when the ball is re-acquired after being lost) |
 | `class_name` | Detector class (e.g. `person`, `sports ball`, or your model's names) |
 | `confidence` | Detector confidence; **empty** for predicted ball positions |
 | `status` | `detected`, or `predicted` (ball position from the motion model while undetected) |
@@ -89,6 +106,107 @@ All coordinates are **image pixels**, not pitch metres.
 `summary.json` includes frames processed, processing FPS, unique player IDs, median
 track length, count of tracks shorter than 10 frames (a rough fragmentation signal),
 ball frames detected/predicted/lost and coverage, and the full effective config.
+
+### Demo run used in the report
+
+```bash
+python -m soccer_tracker --input data/raw/uvy_track/soccer_V04/vid__fkPwtg7ozU.mp4 -o results/demo/uvy_soccer_V04_annotated.mp4 --output-csv results/demo/uvy_soccer_V04_tracks.csv --output-summary results/demo/uvy_soccer_V04_summary.json --device cpu
+```
+
+```bash
+python scripts/visualize_run.py --csv results/demo/uvy_soccer_V04_tracks.csv --video data/raw/uvy_track/soccer_V04/vid__fkPwtg7ozU.mp4 --annotated results/demo/uvy_soccer_V04_annotated.mp4 --out-dir results/demo --prefix uvy_soccer_V04
+```
+
+The first command writes the annotated MP4, the tracks CSV and the JSON summary; the
+second draws the player-trajectory, heatmap and ball-trajectory figures for that run.
+`scripts/frames_to_video.py` converts a folder of frames (for example a SportsMOT
+sequence) into an MP4 the application can read.
+
+## 2b. Experiments: baselines, metrics, plots
+
+Get the data subsets first (commands in [DATASETS.md](DATASETS.md), about 0.73 GB), then:
+
+```bash
+python scripts/run_experiments.py all
+```
+
+That runs, in order (each stage can also be run on its own by name):
+
+| Stage | What it does | Output |
+|---|---|---|
+| `detect` | Runs YOLO11n once per sequence and caches the detections, so every tracker sees identical boxes. The slow step: 0.3-1 s per frame on a CPU, 4,850 frames. Resumable | `results/cache/` |
+| `runtime` | Times every pipeline stage on 150 frames (run on an idle machine) | `results/metrics/runtime_*` |
+| `players` | SORT vs OC-SORT vs ByteTrack on the cached detections: parameter grid on one dev sequence, then HOTA / DetA / AssA / MOTA / IDF1 / ID switches / FP / FN / fragmentation on the test sequences | `results/metrics/player_*`, `results/tracks/` |
+| `ball` | Detection-only vs Kalman ball tracking: precision, recall, F1, AP@0.5, coverage, centre error, continuity | `results/metrics/ball_*` |
+| `models` | Optional YOLOv8n vs YOLO11n comparison on a subset | `results/metrics/model_comparison.csv` |
+| `plots` | All figures | `results/plots/*.png` |
+| `db` | Rebuilds the SQLite database from the result files | `results/sports_analytics.db` |
+
+```bash
+python scripts/make_report_tables.py
+```
+
+regenerates `results/tables.md` and refreshes the tables in the report from the metrics
+files. Which sequences and frame ranges are used is fixed in
+[`configs/experiments.yaml`](configs/experiments.yaml).
+
+**Evaluators.** Player-tracking metrics come from `trackers.eval` (Roboflow `trackers`
+package), an established re-implementation built to match TrackEval. Ball and detector
+metrics come from this project's own evaluator (`src/soccer_tracker/evaluation/`), which
+is documented and unit-tested but is **not** an official benchmark evaluator. All numbers
+are computed on small subsets with a generic COCO detector and are not comparable to
+leaderboard results.
+
+### Headline results
+
+**Player tracking, SportsMOT test sequences** (3 sequences, 1,381 frames; parameters
+chosen on one separate dev sequence; identical YOLO11n detections for every tracker;
+best value per column in bold):
+
+<!-- TABLE:tracking_sportsmot -->
+| Method | HOTA | DetA | AssA | MOTA | IDF1 | IDSW | FP | FN | Frag | MT | ML | Prec. | Rec. |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| YOLO11n + SORT | **65.90** | **64.83** | **67.03** | **64.90** | **70.56** | 60 | **4898** | 784 | **158** | 59 | **0** | **76.08** | 95.21 |
+| YOLO11n + OC-SORT | 59.27 | 60.63 | 57.97 | 55.35 | 61.21 | 106 | 6382 | 817 | 230 | 61 | **0** | 70.89 | 95.01 |
+| YOLO11n + ByteTrack (proposed) | 62.63 | 59.35 | 66.13 | 52.63 | 66.84 | **51** | 7029 | **670** | 168 | **62** | **0** | 69.06 | **95.91** |
+<!-- /TABLE:tracking_sportsmot -->
+
+**Player tracking, UVY-Track test sequences** (3 sequences, 1,569 frames). UVY-Track
+labels only part of the people in each clip, so false positives cannot be measured;
+OWTA, detection recall (DetRe) and AssA are the valid metrics, and the columns marked *
+are shown only for completeness:
+
+<!-- TABLE:tracking_uvy_partial -->
+| Method | OWTA | DetRe | AssA | IDSW | Frag | MT | ML | FN | HOTA* | MOTA* | IDF1* | FP* |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| YOLO11n + SORT | 55.75 | 56.44 | **57.41** | 25 | **147** | **16** | 1 | 2504 | 38.50 | -31.96 | 46.85 | 9956 |
+| YOLO11n + OC-SORT | 54.49 | 57.54 | 54.22 | 44 | 193 | **16** | **0** | 2366 | 33.46 | -85.50 | 38.05 | 15140 |
+| YOLO11n + ByteTrack (proposed) | **56.80** | **58.67** | 57.34 | **23** | 165 | **16** | **0** | **2243** | 34.31 | -93.25 | 39.06 | 16017 |
+<!-- /TABLE:tracking_uvy_partial -->
+
+**Ball: detection only vs Kalman tracker** (13 sequences of UVY-Track and InFactory;
+"dist" = centre within one ball diameter of the ground truth):
+
+<!-- TABLE:ball_summary -->
+| Data | Method | Visible-ball frames | P (dist) | R (dist) | F1 (dist) | P (IoU) | R (IoU) | F1 (IoU) | AP@0.5 | Coverage | Centre error of correct outputs (px) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| InFactory | Detection only (YOLO11n) | 884 | 74.51 | 34.39 | 47.06 | 66.91 | 30.88 | 42.26 | 25.95 | 28.14 | 2.11 |
+| InFactory | Kalman tracker, detected positions only | 884 | 85.13 | 30.43 | 44.83 | 74.68 | 26.70 | 39.33 | n/a | 21.79 | 3.29 |
+| InFactory | Kalman tracker: detected + predicted (proposed) | 884 | 62.24 | 43.44 | 51.17 | 46.19 | 32.24 | 37.98 | n/a | 42.55 | 4.59 |
+| UVY-Track | Detection only (YOLO11n) | 1518 | 62.43 | 34.59 | 44.51 | 25.45 | 14.10 | 18.14 | 12.02 | 53.60 | 1.99 |
+| UVY-Track | Kalman tracker, detected positions only | 1518 | 61.11 | 28.99 | 39.32 | 30.42 | 14.43 | 19.57 | n/a | 45.89 | 2.00 |
+| UVY-Track | Kalman tracker: detected + predicted (proposed) | 1518 | 54.85 | 43.22 | 48.34 | 19.48 | 15.35 | 17.17 | n/a | 76.23 | 3.15 |
+| All ball sequences | Detection only (YOLO11n) | 2402 | 66.37 | 34.51 | 45.41 | 38.99 | 20.27 | 26.68 | 16.29 | 41.37 | 2.03 |
+| All ball sequences | Kalman tracker, detected positions only | 2402 | 68.44 | 29.52 | 41.24 | 43.92 | 18.94 | 26.47 | n/a | 34.32 | 2.49 |
+| All ball sequences | Kalman tracker: detected + predicted (proposed) | 2402 | 57.36 | 43.30 | 49.35 | 28.57 | 21.57 | 24.58 | n/a | 60.05 | 3.68 |
+<!-- /TABLE:ball_summary -->
+
+In short: ByteTrack (proposed) gives the fewest identity switches and the highest recall
+on both tracking datasets and the best OWTA on UVY-Track, but tuned SORT has the higher
+HOTA / MOTA / IDF1 on SportsMOT. The Kalman ball tracker raises ball recall, F1 and track
+continuity over detection alone at the cost of precision. The generic COCO detector is
+the main limit on both accuracy and speed (about 3 FPS on a laptop CPU). Full results,
+plots and discussion: [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md).
 
 ## 3. Configuration
 
@@ -104,6 +222,7 @@ Most important knobs:
 | `players.detector.imgsz` | 1280 | 640 is ~3× faster but misses distant players |
 | `players.filter.max_height_frac` | 0.6 | Raise to 1.0 for close-up footage |
 | `players.filter.use_pitch_mask` | false | `true` drops detections whose feet are not on grass (crowd, bench) |
+| `players.tracker.algorithm` | `bytetrack` | `sort` or `ocsort` to run a baseline tracker |
 | `players.tracker.lost_track_buffer` | 30 | Higher keeps IDs through longer occlusions, risks wrong re-association |
 | `ball.detector.weights` / `classes` | COCO `sports ball` | Point to soccer-specific weights (see §4) |
 | `ball.detector.tiling.enabled` | false | Helps with tiny balls; costs several extra inferences per frame |
@@ -171,6 +290,9 @@ pytest -m integration     # real-model tests (needs weights; run the CLI once to
 | `test_analytics.py` | CSV columns/values, summary statistics |
 | `test_pipeline_smoke.py` | Full pipeline on a 40-frame synthetic clip (ground-truth detector, no weights): video, CSV, summary, gap bridging, error paths, CLI exit codes |
 | `test_yolo_integration.py` | Real YOLO loading, class lookup, download policy errors, tiled inference, pipeline with real model |
+| `test_datasets.py` | SportsMOT / UVY-Track / InFactory adapters on small fixtures in each real layout: frame ranges, class merging, YOLO label conversion, error paths |
+| `test_evaluation.py` | Evaluators against hand-computed cases: precision/recall/F1, AP, ball metrics (predicted vs detected, continuity, centre error, ID switches), MOT file conversion with a known ID switch |
+| `test_experiments.py` | Tracker factory (SORT / OC-SORT / ByteTrack), `--tracker` option, detection cache round trip, deterministic tracker replay, equal tuning budget, CSV round trip, database schema |
 
 ## 6. Troubleshooting
 
@@ -196,13 +318,15 @@ pytest -m integration     # real-model tests (needs weights; run the CLI once to
 **Implemented**
 - Video input validation (existence, extension, emptiness, decodability, FPS fallback) and safe output handling
 - YOLO player detection with configurable weights, classes, thresholds, resolution and device
-- ByteTrack player tracking with configurable association parameters
+- ByteTrack player tracking with configurable association parameters; SORT and OC-SORT selectable as baselines (`--tracker`)
+- Dataset adapters for SportsMOT, UVY-Track and InFactory, and a tool that downloads only selected sequences from a remote ZIP
+- Reproducible experiments: cached detections, three-tracker comparison with HOTA / MOTA / IDF1, ball evaluation, runtime benchmark, plots, SQLite database
 - Separate ball pipeline: detection (optional tiling) → filtering → Kalman tracking with gating, coasting, re-acquisition
 - Annotated video: per-ID colours, IDs, foot-point trails, ball marker and trail (detected vs. predicted), status overlay
 - Streaming CSV export and JSON run summary
 - Single shared inference pass for players and ball when possible
 - YAML config with strict validation; CLI overrides; clear errors and exit codes
-- 71 automated tests including an end-to-end smoke test without model weights
+- 109 automated tests including an end-to-end smoke test without model weights
 
 **Known limitations**
 - Ball detection with COCO weights is weak on broadcast footage (see §4)
@@ -215,25 +339,31 @@ pytest -m integration     # real-model tests (needs weights; run the CLI once to
 
 **Recommended next improvements (roughly in order of value)**
 1. Soccer-specific detector weights for players and ball (largest accuracy gain)
-2. Evaluate on a labelled clip (e.g. MOTA/IDF1/HOTA for players, per-frame ball recall); Roboflow `trackers` includes evaluation utilities
-3. Camera-motion compensation (BoT-SORT's CMC) for steadier trails
-4. Team classification by jersey-colour clustering of player crops
-5. Pitch keypoint detection + homography → positions in metres, speeds, heatmaps
-6. Offline ball-trajectory smoothing/interpolation over the full video
+2. Camera-motion compensation (BoT-SORT's CMC) for steadier trails
+3. Team classification by jersey-colour clustering of player crops
+4. Pitch keypoint detection + homography → positions in metres, speeds, heatmaps
+5. Offline ball-trajectory smoothing/interpolation over the full video
 
 ## Project layout
 
 ```
 soccer-tracker/
-├── configs/            default.yaml, soccer_finetuned.example.yaml
-├── docs/               ARCHITECTURE.md
-├── scripts/            make_synthetic_video.py
+├── configs/            default.yaml, soccer_finetuned.example.yaml, experiments.yaml (experiment manifest)
+├── docs/               FINAL_REPORT.md, PRESENTATION_NOTES.md, ARCHITECTURE.md
+├── scripts/            run_experiments.py, make_report_tables.py, make_presentation.py,
+│                       fetch_zip_subset.py, visualize_run.py, frames_to_video.py, make_synthetic_video.py
 ├── src/soccer_tracker/
 │   ├── cli.py, __main__.py, config.py, errors.py
 │   ├── video_io.py, pipeline.py, visualization.py, analytics.py, synthetic.py
 │   ├── detection/      base.py, yolo.py, filters.py
-│   └── tracking/       player_tracker.py, ball_tracker.py, types.py
+│   ├── tracking/       player_tracker.py, factory.py (SORT / OC-SORT / ByteTrack), ball_tracker.py, types.py
+│   ├── datasets/       sportsmot.py, uvy_track.py, infactory.py (one adapter per dataset)
+│   ├── evaluation/     mot.py (trackers.eval wrapper), detection.py, ball.py (custom evaluators)
+│   └── experiments/    manifest, detections (cache), players, ball, models, runtime, plots, database
 ├── tests/              unit, smoke, and integration tests
+├── results/            metrics/, plots/, tracks/, demo/, tables.md, sports_analytics.db
+├── data/               datasets (git-ignored; see DATASETS.md)
 ├── weights/            model files (git-ignored)
+├── DATASETS.md, presentation.pptx
 ├── requirements.txt, requirements-dev.txt, pyproject.toml
 ```

@@ -28,6 +28,8 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--max-frames", type=int, default=None, help="Process at most N frames")
     p.add_argument("--player-weights", default=None, help="Override players.detector.weights")
     p.add_argument("--ball-weights", default=None, help="Override ball.detector.weights")
+    p.add_argument("--tracker", default=None, choices=["bytetrack", "sort", "ocsort"],
+                   help="Player tracker: bytetrack (proposed, default), sort or ocsort (baselines)")
     p.add_argument("--device", default=None, help="Inference device, e.g. cpu, 0 (CUDA), mps")
     p.add_argument("--no-ball", action="store_true", help="Disable ball detection/tracking")
     p.add_argument("--ball-tiling", action="store_true", help="Enable tiled (sliced) inference for the ball")
@@ -52,6 +54,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             cfg.players.detector.weights = args.player_weights
         if args.ball_weights:
             cfg.ball.detector.weights = args.ball_weights
+        if args.tracker:
+            cfg.players.tracker.algorithm = args.tracker
         if args.device is not None:
             cfg.players.detector.device = args.device
             cfg.ball.detector.device = args.device
