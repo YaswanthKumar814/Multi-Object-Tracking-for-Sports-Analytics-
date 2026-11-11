@@ -1,0 +1,72 @@
+[
+  {
+    "file": "00_architecture.png",
+    "description": "System architecture diagram",
+    "status": "ok"
+  },
+  {
+    "file": "01_hota_mota_idf1.png",
+    "description": "HOTA, MOTA and IDF1 for SORT, OC-SORT and ByteTrack",
+    "status": "ok"
+  },
+  {
+    "file": "02_deta_assa.png",
+    "description": "DetA and AssA comparison",
+    "status": "ok"
+  },
+  {
+    "file": "03_detection_prf.png",
+    "description": "Player / ball detection precision, recall, F1",
+    "status": "ok"
+  },
+  {
+    "file": "04_runtime.png",
+    "description": "Tracker latency and end-to-end FPS",
+    "status": "ok"
+  },
+  {
+    "file": "05_idsw_frag.png",
+    "description": "ID switches and track fragmentation",
+    "status": "ok"
+  },
+  {
+    "file": "06_player_trajectories.png",
+    "description": "Player trajectories over a video frame",
+    "status": "ok"
+  },
+  {
+    "file": "07_player_heatmap.png",
+    "description": "Player-position heatmap",
+    "status": "ok"
+  },
+  {
+    "file": "08_ball_trajectory.png",
+    "description": "Ball trajectory: detected, predicted, lost",
+    "status": "ok"
+  },
+  {
+    "file": "09_ball_status.png",
+    "description": "Ball track status per sequence",
+    "status": "ok"
+  },
+  {
+    "file": "10_ball_pr_curve.png",
+    "description": "Ball detector precision-recall curve",
+    "status": "ok"
+  },
+  {
+    "file": "11_per_sequence_hota.png",
+    "description": "HOTA per test sequence",
+    "status": "ok"
+  },
+  {
+    "file": "12_tuning_sensitivity.png",
+    "description": "Hyper-parameter sensitivity on the dev sequence",
+    "status": "ok"
+  },
+  {
+    "file": "13_model_comparison.png",
+    "description": "YOLOv8n vs YOLO11n",
+    "status": "ok"
+  }
+]

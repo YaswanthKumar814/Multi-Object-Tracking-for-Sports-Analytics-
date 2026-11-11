@@ -48,7 +48,12 @@
 | `detection/base.py` | `Detections` container, `Detector` protocol, IoU, NMS, tiling geometry | NumPy |
 | `detection/yolo.py` | Ultralytics wrapper, weight resolution and download policy, class-name lookup, tiled inference, shared inference pass | Ultralytics (lazy import) |
 | `detection/filters.py` | Size/aspect filters, HSV pitch mask | OpenCV |
-| `tracking/player_tracker.py` | ByteTrack adapter (the only file touching the `trackers` API) | trackers, supervision |
+| `tracking/player_tracker.py` | Player-tracker adapter: ByteTrack by default, SORT / OC-SORT selectable (`players.tracker.algorithm`) | trackers, supervision |
+| `tracking/factory.py` | Builds SORT, OC-SORT or ByteTrack from one shared parameter set; tracker names used in all tables and plots | trackers |
+| `datasets/` | One adapter per dataset (SportsMOT, UVY-Track, InFactory) converting to a common in-memory form; see DATASETS.md | OpenCV, NumPy |
+| `evaluation/mot.py` | HOTA / CLEAR / Identity via `trackers.eval` (TrackEval-compatible); MOT file conversion | trackers |
+| `evaluation/detection.py`, `evaluation/ball.py` | Custom, unit-tested evaluators: precision / recall / F1 / AP, ball coverage, centre error, continuity | NumPy, SciPy |
+| `experiments/` | Manifest, detection cache, tracker comparison, ball evaluation, model comparison, runtime benchmark, plots, SQLite database | all of the above, matplotlib |
 | `tracking/ball_tracker.py` | Single-target Kalman tracker and trajectory buffer | NumPy |
 | `visualization.py` | Boxes, IDs, trails, ball marker, HUD | OpenCV |
 | `analytics.py` | CSV export, run statistics, JSON summary | stdlib |

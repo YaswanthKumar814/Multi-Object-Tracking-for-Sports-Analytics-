@@ -81,6 +81,11 @@ class Visualizer:
             # A small marker above the ball stays visible even when the ball is tiny.
             tri = np.array([[cx, cy - radius - 4], [cx - 7, cy - radius - 16], [cx + 7, cy - radius - 16]], np.int32)
             cv2.fillPoly(out, [tri], BALL_PRED_COLOR if ball.status == PREDICTED else BALL_COLOR, cv2.LINE_AA)
+            # Spell the status out so a predicted position can never be mistaken for a detection.
+            if ball.status == PREDICTED:
+                self._label(out, "ball (predicted)", (cx + radius + 4, cy + 6), BALL_PRED_COLOR)
+            else:
+                self._label(out, "ball", (cx + radius + 4, cy + 6), BALL_COLOR)
 
         if cfg.draw_hud:
             ball_state = "lost" if ball is None else ball.status

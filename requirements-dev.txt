@@ -1,2 +1,8 @@
 -r requirements.txt
 pytest>=8
+# Experiments, plots, report and slides (not needed to run the application itself)
+matplotlib>=3.8
+scipy>=1.11
+huggingface_hub>=0.24
+requests>=2.31
+python-pptx>=1.0

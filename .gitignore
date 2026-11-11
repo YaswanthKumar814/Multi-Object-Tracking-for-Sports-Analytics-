@@ -3,8 +3,25 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 .venv/
-outputs/
+venv/
+.claude/
+
+# Model weights (downloaded on first run)
 weights/*
 !weights/.gitkeep
+*.pt
+
+# Datasets (see DATASETS.md for how to obtain the subsets used)
+data/
+
+# Application outputs
+outputs/
 *.mp4
 *.avi
+
+# Experiment outputs: keep the small result files (metrics, plots, database,
+# MOT text files); ignore bulky or regenerable ones.
+results/cache/
+results/logs/
+results/tracks/tuning/
+results/demo/*.mp4

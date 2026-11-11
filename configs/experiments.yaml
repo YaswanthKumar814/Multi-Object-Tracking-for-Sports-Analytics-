@@ -1,0 +1,45 @@
+# Experiment manifest: exactly which data every reported number comes from.
+# Paths are relative to the directory the command is run from (the project root).
+# See DATASETS.md for how each subset was obtained.
+
+results_dir: results
+
+# Detector used for every experiment. Detections are computed once per sequence
+# and cached, so all tracker configurations see identical detections.
+detector:
+  weights: weights/yolo11n.pt
+  imgsz: 1280
+  device: cpu
+
+# Optional detector comparison (run with: run_experiments.py models).
+model_comparison:
+  weights: [weights/yolov8n.pt, weights/yolo11n.pt]
+  sportsmot: [v_dw7LOz17Omg_c067]
+  max_frames: 200            # first 200 frames of the SportsMOT sequence (keeps CPU time bounded)
+  infactory: [b0558318-3605-4d54-9930-41c77fd4b20a, 5c2081b3-ebb8-4de3-a357-7580c730a059]
+
+sportsmot:
+  root: data/raw/sportsmot
+  split: val
+  # "dev" is the only sequence used to choose tracker hyper-parameters. It comes
+  # from a different source video than every test sequence.
+  dev:
+    - v_2QhNRucNC7E_c017
+  test:
+    - v_dw7LOz17Omg_c067
+    - v_G-vNjfx1GGc_c008
+    - v_i2_L4qquVg0_c007
+
+uvy_track:
+  root: data/raw/uvy_track
+  # No parameter is tuned on UVY-Track; every sequence is test data. Frame
+  # ranges are restricted to frames that are actually annotated.
+  test:
+    - {name: soccer_V04, first_frame: 1, last_frame: 219}
+    - {name: soccer_V01, first_frame: 1, last_frame: 750}
+    - {name: soccer_V03, first_frame: 82, last_frame: 681}
+
+infactory:
+  root: data/raw/infactory_ball
+  # Ball detection only. "all" = the 10 clips listed in metadata.csv.
+  clips: all

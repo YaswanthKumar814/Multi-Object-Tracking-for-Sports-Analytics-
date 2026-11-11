@@ -65,7 +65,11 @@ class PlayerFilterConfig:
 
 @dataclass
 class ByteTrackConfig:
-    """Parameters passed to ``trackers.ByteTrackTracker`` (Roboflow, Apache-2.0).
+    """Player tracker parameters (Roboflow ``trackers`` package, Apache-2.0).
+
+    ``algorithm`` selects ByteTrack (default, the proposed method) or one of
+    the baselines, SORT and OC-SORT. The remaining parameters are shared; a
+    tracker ignores the ones it does not have (see tracking/factory.py).
 
     ByteTrack associates high-confidence detections first, then tries to
     rescue unmatched tracks with low-confidence detections. That second stage
@@ -73,6 +77,7 @@ class ByteTrackConfig:
     is set *below* ``high_conf_det_threshold``.
     """
 
+    algorithm: str = "bytetrack"  # bytetrack | sort | ocsort
     track_activation_threshold: float = 0.5  # min confidence to start a new track
     high_conf_det_threshold: float = 0.5  # split between first/second association stage
     minimum_iou_threshold: float = 0.1  # min IoU for a detection-track match
@@ -274,6 +279,7 @@ def validate(cfg: AppConfig) -> AppConfig:
     _check(0 < pf.max_height_frac <= 1, "players.filter.max_height_frac must be in (0, 1]")
     _check(0 < pf.min_aspect <= pf.max_aspect, "players.filter: need 0 < min_aspect <= max_aspect")
     pt = cfg.players.tracker
+    _check(pt.algorithm in ("bytetrack", "sort", "ocsort"), "players.tracker.algorithm must be bytetrack, sort or ocsort")
     _check(0 <= pt.track_activation_threshold <= 1, "players.tracker.track_activation_threshold must be in [0, 1]")
     _check(0 <= pt.high_conf_det_threshold <= 1, "players.tracker.high_conf_det_threshold must be in [0, 1]")
     _check(pt.lost_track_buffer >= 0, "players.tracker.lost_track_buffer must be >= 0")

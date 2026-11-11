@@ -33,7 +33,8 @@ players:
     min_aspect: 0.8       # box height / width
     max_aspect: 6.0
     use_pitch_mask: false # true = drop boxes whose feet are not on grass (removes crowd)
-  tracker:                # ByteTrack (Roboflow `trackers` package)
+  tracker:                # Roboflow `trackers` package
+    algorithm: bytetrack  # bytetrack (proposed) | sort | ocsort (baselines)
     track_activation_threshold: 0.5
     high_conf_det_threshold: 0.5
     minimum_iou_threshold: 0.1
