@@ -29,21 +29,27 @@ Player and Ball Tracking with YOLO11n, ByteTrack, a Kalman Filter and Motion-Bas
 
 \author{
 \IEEEauthorblockN{Ravva Siddhartha}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\
+\IEEEauthorblockA{\textit{Dept. of Computer Science}\\
+\textit{and Engineering}\\
 \textit{Amrita School of Computing}\\
-Amrita Vishwa Vidyapeetham, India\\
+Amrita Vishwa Vidyapeetham\\
+Bengaluru, India\\
 \texttt{BL.EN.U4CSE23246}}
 \and
 \IEEEauthorblockN{Pulapa Yaswanth Kumar}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\
+\IEEEauthorblockA{\textit{Dept. of Computer Science}\\
+\textit{and Engineering}\\
 \textit{Amrita School of Computing}\\
-Amrita Vishwa Vidyapeetham, India\\
+Amrita Vishwa Vidyapeetham\\
+Bengaluru, India\\
 \texttt{BL.EN.U4CSE23245}}
 \and
 \IEEEauthorblockN{Dr. Tripty Singh}
-\IEEEauthorblockA{\textit{Dept. of Computer Science and Engineering}\\
+\IEEEauthorblockA{\textit{Dept. of Computer Science}\\
+\textit{and Engineering}\\
 \textit{Amrita School of Computing}\\
-Amrita Vishwa Vidyapeetham, Bengaluru, India}
+Amrita Vishwa Vidyapeetham\\
+Bengaluru, India}
 }
 
 \maketitle
@@ -120,38 +126,28 @@ start at the ball.
 % =============================================================================
 \textbf{Tracking by detection.} Modern MOT systems detect objects in every frame
 and associate detections over time. SORT~\cite{sort} showed that a Kalman
-filter~\cite{kalman} for motion prediction plus Hungarian
-assignment~\cite{hungarian} on bounding-box overlap is a strong and very fast
-baseline. DeepSORT~\cite{deepsort} added an appearance embedding to reduce
-identity switches through occlusion. ByteTrack~\cite{bytetrack} observed that
-discarding low-confidence detections throws away true objects that are occluded
-or blurred, and introduced a second association stage that matches the remaining
-tracks to low-confidence boxes. OC-SORT~\cite{ocsort} kept the simplicity of SORT
-but corrected the error accumulated by the Kalman filter during occlusion with an
-observation-centric re-update, and added a motion-direction consistency term.
-BoT-SORT~\cite{botsort} combined ByteTrack with camera-motion compensation and
-re-identification.
+filter~\cite{kalman} for motion prediction plus assignment on bounding-box
+overlap is a strong and very fast baseline. ByteTrack~\cite{bytetrack} observed
+that discarding low-confidence detections throws away true objects that are
+occluded or blurred, and introduced a second association stage that matches the
+remaining tracks to low-confidence boxes. OC-SORT~\cite{ocsort} kept the
+simplicity of SORT but corrected the error accumulated by the Kalman filter during
+occlusion with an observation-centric re-update.
 
-\textbf{Tracking in sports.} Manafifard \emph{et al.}~\cite{survey} survey player
-tracking in soccer video. SoccerNet-Tracking~\cite{soccernet} and
-SportsMOT~\cite{sportsmot} are the main public benchmarks; SportsMOT emphasises
-fast, variable-speed motion and similar appearance and identifies association,
-rather than detection, as the key difficulty in sports. SoccerTrack~\cite{soccertrack}
-and TeamTrack~\cite{teamtrack} provide full-pitch fisheye and drone footage.
-UVY-Track~\cite{uvy,uvypaper} targets unconstrained user-generated sports video
-rather than broadcast footage.
+\textbf{Tracking in sports.} SportsMOT~\cite{sportsmot} is a main public benchmark
+for player tracking; it emphasises fast, variable-speed motion and similar
+appearance and identifies association, rather than detection, as the key
+difficulty in sports. UVY-Track~\cite{uvy} targets unconstrained user-generated
+sports video rather than broadcast footage, and the InFactory
+dataset~\cite{infactory} labels the ball in professional soccer broadcasts.
 
-\textbf{Ball detection and tracking.} The ball is a small-object problem.
-DeepBall~\cite{deepball} and TrackNet~\cite{tracknet} use specialised fully
-convolutional networks; TrackNet stacks consecutive frames so that the network
-can exploit motion. Slicing-aided inference~\cite{sahi} improves small-object
-recall for generic detectors by running them on overlapping tiles. A common
-lightweight alternative, used here, is to keep a generic detector and add a
-single-target motion model that rejects implausible candidates and bridges short
-gaps. Classical broadcast ball trackers also use motion directly: trajectory-based
-methods~\cite{yu2006} generate many ball candidates and keep only the candidate
-chains whose motion is plausible for a ball. This work adds such a step for the
-ball in flight.
+\textbf{Ball detection and tracking.} The ball is a small, often blurred object that
+generic detectors miss. A common lightweight approach, used here, is to keep a
+generic detector and add a single-target motion model that rejects implausible
+candidates and bridges short gaps. Classical broadcast ball trackers also use
+motion directly: trajectory-based methods~\cite{yu2006} generate many ball
+candidates and keep only the candidate chains whose motion is plausible for a
+ball. This work adds such a step for the ball in flight.
 
 \textbf{Related work at Amrita Vishwa Vidyapeetham, Bengaluru.} YOLO detectors
 have been applied to online exam proctoring~\cite{singh2024proctor}, classroom
@@ -164,8 +160,8 @@ DeepSORT. Aarthi \emph{et al.}~\cite{aarthi2016moving} detect moving objects in
 surveillance video with a bottom-up approach, related to the motion stage used
 here for the ball in flight.
 
-\textbf{Detectors and metrics.} The YOLO family~\cite{yolo} performs detection in
-a single network pass; this work uses the COCO-pretrained~\cite{coco} YOLO11 nano
+\textbf{Detectors and metrics.} YOLO detectors perform detection in a single
+network pass; this work uses the COCO-pretrained~\cite{coco} YOLO11 nano
 model~\cite{yolo11}. CLEAR-MOT~\cite{clear} defines MOTA, which is dominated by
 detection errors. IDF1~\cite{idf1} measures identity preservation.
 HOTA~\cite{hota} balances detection and association explicitly and is the primary
@@ -314,8 +310,8 @@ never fires on it, while extrapolating the last velocity through a kick is wrong
 (Section~\ref{sec:ballresults}). Three components follow the ball in flight.
 
 \emph{Motion candidates.} The two previous frames are aligned to the current one
-with a similarity transform estimated from ORB features~\cite{orb} with
-RANSAC~\cite{ransac}, which cancels camera pan and zoom. A pixel is moving if it
+with a similarity transform estimated from ORB feature matches with RANSAC
+outlier rejection, which cancels camera pan and zoom. A pixel is moving if it
 differs from both aligned frames (three-frame differencing using only past frames,
 so the ghost at the ball's old position is suppressed). Bright, low-saturation
 moving pixels are grouped into components, and small, compact components are
@@ -366,7 +362,7 @@ total (1{,}831 SportsMOT, 1{,}569 UVY-Track, 1{,}450 InFactory).
 \footnotesize
 \begin{tabular}{@{}p{2.6cm}p{4.2cm}p{4.9cm}p{4.6cm}@{}}
 \toprule
- & SportsMOT~\cite{sportsmot} & UVY-Track~\cite{uvy,uvypaper} & InFactory Soccer Ball Tracking~\cite{infactory} \\
+ & SportsMOT~\cite{sportsmot} & UVY-Track~\cite{uvy} & InFactory Soccer Ball Tracking~\cite{infactory} \\
 \midrule
 Footage & Professional broadcast (football, basketball, volleyball) & User-generated online sports videos, seven sports & Professional soccer broadcast \\
 Annotation format & MOT Challenge text & MOT-style text with a class column & YOLO text, one file per frame \\
@@ -426,8 +422,8 @@ identities, so only detection-type metrics are reported for it.
 \subsection{Baselines and Fairness Protocol}
 Three player-tracking configurations are compared: YOLO11n + SORT, YOLO11n +
 OC-SORT, and the proposed YOLO11n + ByteTrack with the Kalman ball tracker. All
-three tracker implementations come from the open-source \texttt{trackers}
-package~\cite{trackers} and share one update interface, so no tracker was
+three tracker implementations come from the open-source Roboflow
+\texttt{trackers} package (v2.6.1) and share one update interface, so no tracker was
 re-implemented. The protocol is as follows.
 \begin{itemize}
 \item The detector output is computed once per sequence and cached; every
@@ -480,9 +476,8 @@ was checked qualitatively.
 
 \subsection{Metrics}
 Player tracking is scored with the evaluation module of the \texttt{trackers}
-package~\cite{trackers}, a re-implementation designed to match
-TrackEval~\cite{trackeval}, the reference evaluator of MOTChallenge and
-SportsMOT. HOTA~\cite{hota} is the primary metric,
+package, a re-implementation designed to match TrackEval, the reference evaluator
+of MOTChallenge and SportsMOT. HOTA~\cite{hota} is the primary metric,
 \begin{equation}
 \mathrm{HOTA}_{\alpha}=\sqrt{\mathrm{DetA}_{\alpha}\cdot\mathrm{AssA}_{\alpha}},
 \label{eq:hota}
@@ -979,7 +974,7 @@ ball is already supported by the application but has not been evaluated. The
 ball motion model can be improved with a gravity-aware model for flights and
 offline forward-backward smoothing, and motion flights should be evaluated on a
 dedicated, fully labelled ball tuning and test split. Camera-motion compensation and appearance-based
-re-identification, as in BoT-SORT~\cite{botsort}, would steady trajectories and
+re-identification would steady trajectories and
 identities. Further steps are team assignment from jersey colour, pitch
 calibration for positions in metres, accelerated inference for real-time
 throughput, and evaluation on the complete validation splits with several tuning
@@ -1004,34 +999,18 @@ most promising improvement.
 % =============================================================================
 \begin{thebibliography}{00}
 \bibitem{sort} A. Bewley, Z. Ge, L. Ott, F. Ramos, and B. Upcroft, ``Simple online and realtime tracking,'' in \emph{Proc. IEEE Int. Conf. Image Process. (ICIP)}, 2016, pp. 3464--3468.
-\bibitem{deepsort} N. Wojke, A. Bewley, and D. Paulus, ``Simple online and realtime tracking with a deep association metric,'' in \emph{Proc. IEEE Int. Conf. Image Process. (ICIP)}, 2017, pp. 3645--3649.
 \bibitem{bytetrack} Y. Zhang, P. Sun, Y. Jiang, D. Yu, F. Weng, Z. Yuan, P. Luo, W. Liu, and X. Wang, ``ByteTrack: Multi-object tracking by associating every detection box,'' in \emph{Proc. Eur. Conf. Comput. Vis. (ECCV)}, 2022.
 \bibitem{ocsort} J. Cao, J. Pang, X. Weng, R. Khirodkar, and K. Kitani, ``Observation-centric SORT: Rethinking SORT for robust multi-object tracking,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2023.
-\bibitem{botsort} N. Aharon, R. Orfaig, and B.-Z. Bobrovsky, ``BoT-SORT: Robust associations multi-pedestrian tracking,'' arXiv:2206.14651, 2022.
-\bibitem{yolo} J. Redmon, S. Divvala, R. Girshick, and A. Farhadi, ``You only look once: Unified, real-time object detection,'' in \emph{Proc. IEEE Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2016, pp. 779--788.
 \bibitem{yolo11} G. Jocher and J. Qiu, ``Ultralytics YOLO11,'' software, 2024. [Online]. Available: \url{https://github.com/ultralytics/ultralytics}
 \bibitem{coco} T.-Y. Lin, M. Maire, S. Belongie, J. Hays, P. Perona, D. Ramanan, P. Doll\'ar, and C. L. Zitnick, ``Microsoft COCO: Common objects in context,'' in \emph{Proc. Eur. Conf. Comput. Vis. (ECCV)}, 2014, pp. 740--755.
 \bibitem{sportsmot} Y. Cui, C. Zeng, X. Zhao, Y. Yang, G. Wu, and L. Wang, ``SportsMOT: A large multi-object tracking dataset in multiple sports scenes,'' in \emph{Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV)}, 2023.
-\bibitem{soccernet} A. Cioppa, S. Giancola, A. Deli\`ege, L. Kang, X. Zhou, Z. Cheng, B. Ghanem, and M. Van Droogenbroeck, ``SoccerNet-Tracking: Multiple object tracking dataset and benchmark in soccer videos,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. Workshops (CVPRW)}, 2022, pp. 3491--3502.
 \bibitem{uvy} E. Alencar and R. de Freitas, ``UVY: A dataset of sport user-generated videos from YouTube for multi-object tracking evaluation,'' Zenodo, 2026. [Online]. Available: \url{https://zenodo.org/records/21303900}
-\bibitem{uvypaper} E. Alencar, L. Pessoa, F. Costa, G. Souza, and R. de Freitas, ``Comparative analysis of deep learning-based multi-object tracking approaches applied to sports user-generated videos,'' in \emph{Proc. 20th Int. Joint Conf. Comput. Vis., Imag. Comput. Graph. Theory Appl. (VISAPP)}, 2025, pp. 691--698.
 \bibitem{infactory} V. Constantinou, M. Iranmanesh, and J. Kanalakis, ``Soccer ball tracking dataset,'' Infactory, 2026. [Online]. Available: \url{https://huggingface.co/datasets/infactory-ai/ball-tracking}
 \bibitem{kalman} R. E. Kalman, ``A new approach to linear filtering and prediction problems,'' \emph{J. Basic Eng.}, vol. 82, no. 1, pp. 35--45, 1960.
-\bibitem{hungarian} H. W. Kuhn, ``The Hungarian method for the assignment problem,'' \emph{Naval Res. Logist. Quart.}, vol. 2, no. 1--2, pp. 83--97, 1955.
-\bibitem{deepball} J. Komorowski, G. Kurzejamski, and G. Sarwas, ``DeepBall: Deep neural-network ball detector,'' in \emph{Proc. Int. Conf. Comput. Vis. Theory Appl. (VISAPP)}, 2019.
-\bibitem{tracknet} Y.-C. Huang, I.-N. Liao, C.-H. Chen, T.-U. Ik, and W.-C. Peng, ``TrackNet: A deep learning network for tracking high-speed and tiny objects in sports applications,'' in \emph{Proc. IEEE Int. Conf. Adv. Video Signal Based Surveill. (AVSS)}, 2019.
-\bibitem{soccertrack} A. Scott, I. Uchida, M. Onishi, Y. Kameda, K. Fukui, and K. Fujii, ``SoccerTrack: A dataset and tracking algorithm for soccer with fish-eye and drone videos,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. Workshops (CVPRW)}, 2022, pp. 3569--3579.
-\bibitem{teamtrack} A. Scott \emph{et al.}, ``TeamTrack: A dataset for multi-sport multi-object tracking in full-pitch videos,'' arXiv:2404.13868, 2024.
-\bibitem{survey} M. Manafifard, H. Ebadi, and H. Abrishami Moghaddam, ``A survey on player tracking in soccer videos,'' \emph{Comput. Vis. Image Understand.}, vol. 159, pp. 19--46, 2017.
-\bibitem{sahi} F. C. Akyon, S. O. Altinuc, and A. Temizel, ``Slicing aided hyper inference and fine-tuning for small object detection,'' in \emph{Proc. IEEE Int. Conf. Image Process. (ICIP)}, 2022.
 \bibitem{hota} J. Luiten, A. O\v{s}ep, P. Dendorfer, P. Torr, A. Geiger, L. Leal-Taix\'e, and B. Leibe, ``HOTA: A higher order metric for evaluating multi-object tracking,'' \emph{Int. J. Comput. Vis.}, vol. 129, 2021.
 \bibitem{clear} K. Bernardin and R. Stiefelhagen, ``Evaluating multiple object tracking performance: The CLEAR MOT metrics,'' \emph{EURASIP J. Image Video Process.}, 2008.
 \bibitem{idf1} E. Ristani, F. Solera, R. Zou, R. Cucchiara, and C. Tomasi, ``Performance measures and a data set for multi-target, multi-camera tracking,'' in \emph{Proc. Eur. Conf. Comput. Vis. Workshops (ECCVW)}, 2016.
-\bibitem{trackers} Roboflow, ``trackers,'' software, version 2.6.1, 2026. [Online]. Available: \url{https://github.com/roboflow/trackers}
-\bibitem{trackeval} J. Luiten and A. Hoffhues, ``TrackEval,'' software, 2020. [Online]. Available: \url{https://github.com/JonathonLuiten/TrackEval}
 \bibitem{yu2006} X. Yu, H. W. Leong, C. Xu, and Q. Tian, ``Trajectory-based ball detection and tracking in broadcast soccer video,'' \emph{IEEE Trans. Multimedia}, vol. 8, no. 6, 2006.
-\bibitem{orb} E. Rublee, V. Rabaud, K. Konolige, and G. Bradski, ``ORB: An efficient alternative to SIFT or SURF,'' in \emph{Proc. IEEE Int. Conf. Comput. Vis. (ICCV)}, 2011.
-\bibitem{ransac} M. A. Fischler and R. C. Bolles, ``Random sample consensus: A paradigm for model fitting with applications to image analysis and automated cartography,'' \emph{Commun. ACM}, vol. 24, no. 6, 1981.
 \bibitem{kumar2023pedestrian} A. Kumar, T. Singh, and P. Duraisamy, ``Detection and tracking of multiple pedestrians using deep learning,'' in \emph{Proc. 14th Int. Conf. Comput. Commun. Netw. Technol. (ICCCNT)}, 2023, pp. 1--6.
 \bibitem{singh2024proctor} T. Singh, R. R. Nair, T. Babu, and P. Duraisamy, ``Enhancing academic integrity in online assessments: Introducing an effective online exam proctoring model using YOLO,'' \emph{Procedia Comput. Sci.}, vol. 235, pp. 1399--1408, 2024.
 \bibitem{nair2023attentive} R. R. Nair, T. Babu, T. Singh, P. Duraisamy, and V. Mehra, ``Class room student attentiveness model based on YOLO,'' in \emph{Proc. 14th Int. Conf. Comput. Commun. Netw. Technol. (ICCCNT)}, 2023.
