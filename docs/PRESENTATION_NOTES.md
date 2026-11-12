@@ -75,7 +75,7 @@ Top table, SportsMOT (3 test sequences, 1,381 frames):
 | | HOTA | MOTA | IDF1 | ID switches |
 |---|---|---|---|---|
 | SORT | 65.9 | 64.9 | 70.6 | 60 |
-| OC-SORT | 59.3 | 55.4 | 61.2 | 106 |
+| OC-SORT | 59.3 | 55.3 | 61.2 | 106 |
 | ByteTrack (proposed) | 62.6 | 52.6 | 66.8 | 51 |
 
 What to say:
