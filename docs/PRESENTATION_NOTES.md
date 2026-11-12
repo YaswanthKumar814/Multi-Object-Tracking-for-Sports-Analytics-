@@ -5,8 +5,8 @@ are rebuilt from the stored results with `python scripts/make_presentation.py`, 
 the numbers below match the slides as long as the experiments are not re-run.
 If you re-run the experiments, read the numbers off the slides.
 
-Before presenting: put your name, roll number and team members on slide 1
-(or rebuild with `python scripts/make_presentation.py --author "Name 1, Name 2"`).
+Before presenting: slide 1 says "Presented by: Team 8"; to list names instead,
+rebuild with `python scripts/make_presentation.py --author "Name 1, Name 2"`.
 Have `results/demo/uvy_soccer_V04_annotated.mp4` open in a video player (VLC plays
 it reliably) to show for 10 seconds on slide 9.
 
@@ -16,9 +16,9 @@ it reliably) to show for 10 seconds on slide 9.
 
 "Our project is multi-object tracking for sports analytics: tracking every player
 and the ball in soccer video. The system we propose is YOLO11n for detection,
-ByteTrack for the players and a Kalman filter for the ball. We compare it with two
-baseline trackers, SORT and OC-SORT, on three public datasets, about 4,850 labelled
-frames in total, all processed on a laptop CPU."
+ByteTrack for the players and a Kalman filter with motion-based flights for the
+ball. We compare it with two baseline trackers, SORT and OC-SORT, on three public
+datasets, about 4,850 labelled frames in total, all processed on a CPU."
 
 ## Slide 2 - Problem statement and objectives
 
@@ -50,8 +50,10 @@ Walk left to right: video in, one YOLO11n pass per frame that finds both people
 and the ball, simple size filters, then two different trackers. "Players are many
 similar objects, so they need multi-object association: ByteTrack. The ball is a
 single small object that is often missed, so it gets its own single-target Kalman
-tracker. That combination is our hybrid proposal. For the baselines we swap only
-the player-tracker block."
+tracker. When the ball is kicked it becomes a blurred streak the detector cannot
+see, so the ball tracker also looks for fast, smooth motion that starts at the
+ball: we call these flights. That combination is our hybrid proposal. For the
+baselines we swap only the player-tracker block."
 
 ## Slide 5 - Methodology and tracking algorithms
 
@@ -61,8 +63,13 @@ the player-tracker block."
   filter after occlusion; ByteTrack matches confident boxes first and then uses
   the low-confidence boxes to keep existing tracks alive.
 * Ball tracker: constant-velocity Kalman filter. It only accepts a candidate near
-  where the ball should be, needs 2 detections before reporting, and predicts for
-  up to 15 frames when the ball is not detected.
+  where the ball should be, needs a reasonably confident detection (0.3) and 2
+  detections before reporting, and predicts for at most 6 frames when the ball is
+  not detected, never right after a kick.
+* Motion flights: line up the previous frames with the current one to cancel the
+  camera pan, find small bright moving blobs, link them into fast, smooth paths,
+  and accept a path only if, run backwards, it starts exactly where the detector
+  last saw the ball. That is how the shot on the demo clip is followed into the net.
 * **Fairness** (stress this, it is the 5-mark item): YOLO was run once and the
   detections were saved, so all three trackers got exactly the same boxes, frames
   and ground truth. Each tracker was tuned with the same 48-setting grid on one
@@ -106,11 +113,17 @@ What to say:
   benchmark tool. A ball output counts as correct when its centre is within one
   ball diameter of the true centre.
 * Ball result: "Detection alone finds the ball in about a third of the frames
-  where it is visible. Adding the Kalman tracker raises recall from 34.5 to 43.3
-  percent and F1 from 45.4 to 49.3, and the ball track becomes much more
-  continuous: 168 short pieces become 47 longer ones. The price is precision,
-  from 66.4 down to 57.4, because only about 43 percent of the predicted positions
-  are right."
+  where it is visible. Our tracker raises precision from 66.4 to 70.0 percent,
+  recall from 34.8 to 36.4 and F1 from 45.7 to 47.9, and the ball track becomes
+  much more continuous: 175 short pieces become 44 longer ones. The motion flights
+  matter on shots: on the free-kick clip recall goes from 91 to 99 percent, because
+  the shot is followed into the net."
+* If asked why the overall gain from flights is small: they only fire when the
+  ball is struck and visible in flight; on the other twelve sequences the result
+  is identical to the plain Kalman tracker, which is what we want.
+* Honest detail if asked: the flight rules were developed on the UVY-Track clips
+  and refined after a first InFactory run, so the ball numbers are not from fully
+  held-out data. We also checked a clip we never used (`soccer_V02`).
 * We report no identity metrics on InFactory because it has no ball IDs.
 
 ## Slide 8 - Graphs
@@ -122,8 +135,9 @@ Four plots; point at each briefly:
 2. ID switches and fragmentation: ByteTrack has the fewest switches on both datasets.
 3. Per-sequence results: the ranking changes from sequence to sequence, which is
    why we do not over-claim.
-4. Runtime: the trackers take 2-7 ms per frame; the detector takes about 290 ms.
-   The full pipeline runs at about 3 FPS on this laptop CPU (about 1 FPS on battery).
+4. Runtime: the player trackers take about 1 ms per frame; the detector about
+   113 ms and the ball motion stage about 53 ms. The full pipeline runs at 5.7 FPS
+   on an Apple M1 CPU on mains power (much slower on battery).
 
 ## Slide 9 - Visual results
 
@@ -131,18 +145,21 @@ Four plots; point at each briefly:
   marker and the status line. **Play the demo video here for a few seconds.**
 * Top right: player trajectories. Bottom left: player-position heatmap. Both are in
   image pixels, not pitch metres.
-* Bottom right: ball trajectory against ground truth. Blue dots are detections,
-  orange triangles are Kalman predictions, red marks are frames with no output.
-  "You can see predictions that follow the ball and predictions that fly off in a
-  straight line after a kick. That is exactly why we label them as predictions."
+* Bottom right: ball trajectory of the free kick against ground truth. Blue dots
+  are detections (by the detector or by a motion flight), orange triangles are
+  Kalman predictions, red marks are frames with no output. "The arc is the shot:
+  the detector loses the blurred ball, the motion flight follows it into the net.
+  Before we added flights, the filter drew a straight line of wrong predictions
+  here."
 
 ## Slide 10 - Limitations and future improvements
 
 * The generic COCO detector is the main limit: it detects unlabelled people and
   misses most small balls.
 * The proposed tracker is not best on every metric.
-* Small evaluation subset, CPU only, about 3 FPS, no camera-motion compensation,
-  no team identification.
+* Small evaluation subset, CPU only, about 6 FPS, no camera-motion compensation for
+  players, no team identification. Motion flights only help on struck balls and
+  must start where the detector last saw the ball.
 * Future: a soccer-specific detector first (biggest gain), tiled inference for the
   ball, a better ball motion model, camera-motion compensation, team and jersey
   recognition, pitch homography for real distances, GPU for real time.
@@ -152,9 +169,9 @@ Four plots; point at each briefly:
 "We built a complete, tested player-and-ball tracking pipeline and evaluated it
 on three datasets with a fair protocol. ByteTrack gave the most stable identities
 and the best result on the partially labelled dataset, tuned SORT scored higher on
-HOTA on SportsMOT, and OC-SORT was weakest. The Kalman ball tracker improved
-recall, F1 and continuity at some cost in precision, and we always mark predicted
-positions. The clearest next step is a soccer-specific detector. Everything is
+HOTA on SportsMOT, and OC-SORT was weakest. The ball tracker improved precision,
+recall, F1 and continuity, motion flights let it follow a shot the detector
+loses, and we always mark predicted positions. The clearest next step is a soccer-specific detector. Everything is
 reproducible with one command."
 
 ---
@@ -178,12 +195,20 @@ library. Our ball evaluator has unit tests with hand-computed answers
 (`tests/test_evaluation.py`), and the tracking pipeline is checked with a case
 that has exactly one known ID switch.
 
-**Why is the Kalman prediction often wrong?** It assumes constant velocity. When
-the ball is kicked or bounces during a detection gap, the filter keeps
-extrapolating the old velocity. Fixes are listed under future work.
+**Why is the Kalman prediction sometimes wrong?** It assumes constant velocity. When
+the ball changes direction during a detection gap, the filter keeps extrapolating
+the old velocity; 40% of predicted positions are wrong. That is why predictions are
+short (at most 6 frames), never made right after a kick, and always labelled.
+
+**What stops the motion flights from following a player?** Three checks: the path
+must be fast and smooth (limbs swing back and forth), it must start where the
+detector last saw the ball, and if the detector confidently sees the ball somewhere
+else after the "launch" the flight is rejected. Frames where the camera alignment
+fails (cuts, replays fading in) give no motion at all.
 
 **Which YOLO version, and why?** YOLO11n. On our subset it beat YOLOv8n for
-players (F1 81.2 against 71.7) and was about 15% faster; for the ball they were equal.
+players (F1 81.2 against 71.7) and was about 5% faster; for the ball they were equal.
 
-**How fast is it?** About 3 frames per second on an Intel Core 7 150U laptop CPU
-on AC power; 87% of the time is the detector. On battery it drops to about 1 FPS.
+**How fast is it?** 5.7 frames per second on an Apple M1 CPU on AC power; 64% of the
+time is the detector and 30% the ball motion stage. Turning motion flights off
+(`ball.motion.enabled: false`) removes the motion stage.

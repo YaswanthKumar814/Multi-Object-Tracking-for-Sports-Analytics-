@@ -1,5 +1,5 @@
 model,target,dataset,sequences,frames,precision,recall,f1,ap50,detector_ms_per_frame,criterion
-YOLOv8n,player,SportsMOT,v_dw7LOz17Omg_c067,200,60.939,87.092,71.705,71.732,423.67,"IoU >= 0.5, confidence >= 0.5 (AP over all confidences)"
-YOLOv8n,ball,InFactory,5c2081b3 b0558318,265,82.979,66.953,74.109,50.977,423.67,"detection only, centre within one ball diameter (AP at IoU >= 0.5)"
-YOLO11n,player,SportsMOT,v_dw7LOz17Omg_c067,200,74.475,89.218,81.183,79.001,360.02,"IoU >= 0.5, confidence >= 0.5 (AP over all confidences)"
-YOLO11n,ball,InFactory,5c2081b3 b0558318,265,88.824,64.807,74.938,51.241,360.02,"detection only, centre within one ball diameter (AP at IoU >= 0.5)"
+YOLOv8n,player,SportsMOT,v_dw7LOz17Omg_c067,200,60.939,87.092,71.705,71.732,112.18,"IoU >= 0.5, confidence >= 0.5 (AP over all confidences)"
+YOLOv8n,ball,InFactory,5c2081b3 b0558318,265,82.979,66.953,74.109,50.977,112.18,"detection only, centre within one ball diameter (AP at IoU >= 0.5)"
+YOLO11n,player,SportsMOT,v_dw7LOz17Omg_c067,200,74.475,89.218,81.183,79.001,106.22,"IoU >= 0.5, confidence >= 0.5 (AP over all confidences)"
+YOLO11n,ball,InFactory,5c2081b3 b0558318,265,88.824,64.807,74.938,51.241,106.22,"detection only, centre within one ball diameter (AP at IoU >= 0.5)"

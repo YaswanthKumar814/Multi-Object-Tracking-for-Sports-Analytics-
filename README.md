@@ -1,6 +1,6 @@
 # Multi-Object Tracking for Sports Analytics (Player and Ball Tracking)
 
-**Proposed system: YOLO11n + ByteTrack (players) + Kalman filter (ball)**, compared
+**Proposed system: YOLO11n + ByteTrack (players) + Kalman filter with motion flights (ball)**, compared
 against YOLO11n + SORT and YOLO11n + OC-SORT on three public datasets
 (SportsMOT, UVY-Track, InFactory Soccer Ball Tracking).
 
@@ -181,33 +181,39 @@ are shown only for completeness:
 <!-- TABLE:tracking_uvy_partial -->
 | Method | OWTA | DetRe | AssA | IDSW | Frag | MT | ML | FN | HOTA* | MOTA* | IDF1* | FP* |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| YOLO11n + SORT | 55.75 | 56.44 | **57.41** | 25 | **147** | **16** | 1 | 2504 | 38.50 | -31.96 | 46.85 | 9956 |
-| YOLO11n + OC-SORT | 54.49 | 57.54 | 54.22 | 44 | 193 | **16** | **0** | 2366 | 33.46 | -85.50 | 38.05 | 15140 |
-| YOLO11n + ByteTrack (proposed) | **56.80** | **58.67** | 57.34 | **23** | 165 | **16** | **0** | **2243** | 34.31 | -93.25 | 39.06 | 16017 |
+| YOLO11n + SORT | 56.07 | 56.37 | **58.20** | 26 | **144** | **16** | 1 | 2524 | 38.47 | -35.07 | 46.35 | 10229 |
+| YOLO11n + OC-SORT | 54.34 | 57.56 | 53.91 | 47 | 185 | **16** | **0** | 2363 | 33.39 | -85.03 | 38.14 | 15096 |
+| YOLO11n + ByteTrack (proposed) | **56.84** | **58.75** | 57.30 | **24** | 160 | **16** | **0** | **2232** | 34.52 | -90.25 | 39.26 | 15744 |
 <!-- /TABLE:tracking_uvy_partial -->
 
-**Ball: detection only vs Kalman tracker** (13 sequences of UVY-Track and InFactory;
+**Ball: detection only vs Kalman tracker vs Kalman + motion flights** (13 sequences of UVY-Track and InFactory;
 "dist" = centre within one ball diameter of the ground truth):
 
 <!-- TABLE:ball_summary -->
 | Data | Method | Visible-ball frames | P (dist) | R (dist) | F1 (dist) | P (IoU) | R (IoU) | F1 (IoU) | AP@0.5 | Coverage | Centre error of correct outputs (px) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | InFactory | Detection only (YOLO11n) | 884 | 74.51 | 34.39 | 47.06 | 66.91 | 30.88 | 42.26 | 25.95 | 28.14 | 2.11 |
-| InFactory | Kalman tracker, detected positions only | 884 | 85.13 | 30.43 | 44.83 | 74.68 | 26.70 | 39.33 | n/a | 21.79 | 3.29 |
-| InFactory | Kalman tracker: detected + predicted (proposed) | 884 | 62.24 | 43.44 | 51.17 | 46.19 | 32.24 | 37.98 | n/a | 42.55 | 4.59 |
-| UVY-Track | Detection only (YOLO11n) | 1518 | 62.43 | 34.59 | 44.51 | 25.45 | 14.10 | 18.14 | 12.02 | 53.60 | 1.99 |
-| UVY-Track | Kalman tracker, detected positions only | 1518 | 61.11 | 28.99 | 39.32 | 30.42 | 14.43 | 19.57 | n/a | 45.89 | 2.00 |
-| UVY-Track | Kalman tracker: detected + predicted (proposed) | 1518 | 54.85 | 43.22 | 48.34 | 19.48 | 15.35 | 17.17 | n/a | 76.23 | 3.15 |
-| All ball sequences | Detection only (YOLO11n) | 2402 | 66.37 | 34.51 | 45.41 | 38.99 | 20.27 | 26.68 | 16.29 | 41.37 | 2.03 |
-| All ball sequences | Kalman tracker, detected positions only | 2402 | 68.44 | 29.52 | 41.24 | 43.92 | 18.94 | 26.47 | n/a | 34.32 | 2.49 |
-| All ball sequences | Kalman tracker: detected + predicted (proposed) | 2402 | 57.36 | 43.30 | 49.35 | 28.57 | 21.57 | 24.58 | n/a | 60.05 | 3.68 |
+| InFactory | Kalman tracker, detected positions only | 884 | 92.48 | 27.83 | 42.78 | 80.08 | 24.09 | 37.04 | n/a | 18.34 | 3.49 |
+| InFactory | Kalman tracker: detected + predicted (YOLO only) | 884 | 82.53 | 36.88 | 50.98 | 63.54 | 28.39 | 39.25 | n/a | 27.24 | 4.27 |
+| InFactory | Kalman tracker + motion flights (proposed) | 884 | 82.53 | 36.88 | 50.98 | 63.54 | 28.39 | 39.25 | n/a | 27.24 | 4.27 |
+| UVY-Track | Detection only (YOLO11n) | 1518 | 62.56 | 35.11 | 44.98 | 24.77 | 13.90 | 17.81 | 12.03 | 54.30 | 1.85 |
+| UVY-Track | Kalman tracker, detected positions only | 1518 | 67.03 | 28.13 | 39.63 | 34.22 | 14.36 | 20.23 | n/a | 40.60 | 1.51 |
+| UVY-Track | Kalman tracker: detected + predicted (YOLO only) | 1518 | 65.60 | 35.18 | 45.80 | 27.76 | 14.89 | 19.38 | n/a | 51.88 | 1.83 |
+| UVY-Track | Kalman tracker + motion flights (proposed) | 1518 | 64.17 | 36.10 | 46.21 | 28.10 | 15.81 | 20.24 | n/a | 54.43 | 1.83 |
+| All ball sequences | Detection only (YOLO11n) | 2402 | 66.43 | 34.85 | 45.71 | 38.41 | 20.15 | 26.43 | 16.31 | 41.74 | 1.94 |
+| All ball sequences | Kalman tracker, detected positions only | 2402 | 74.53 | 28.02 | 40.73 | 47.73 | 17.94 | 26.08 | n/a | 29.91 | 2.23 |
+| All ball sequences | Kalman tracker: detected + predicted (YOLO only) | 2402 | 71.13 | 35.80 | 47.63 | 39.45 | 19.86 | 26.42 | n/a | 40.05 | 2.76 |
+| All ball sequences | Kalman tracker + motion flights (proposed) | 2402 | 69.98 | 36.39 | 47.88 | 39.31 | 20.44 | 26.90 | n/a | 41.37 | 2.74 |
 <!-- /TABLE:ball_summary -->
 
 In short: ByteTrack (proposed) gives the fewest identity switches and the highest recall
 on both tracking datasets and the best OWTA on UVY-Track, but tuned SORT has the higher
-HOTA / MOTA / IDF1 on SportsMOT. The Kalman ball tracker raises ball recall, F1 and track
-continuity over detection alone at the cost of precision. The generic COCO detector is
-the main limit on both accuracy and speed (about 3 FPS on a laptop CPU). Full results,
+HOTA / MOTA / IDF1 on SportsMOT. The ball tracker (Kalman + motion flights) raises ball
+precision, recall, F1 and track continuity over detection alone; motion flights follow a
+struck ball the detector loses (UVY-Track `soccer_V04`: recall 91.1% to 99.4%) and change
+nothing on clips without such a shot. The generic COCO detector is the main limit on
+accuracy and takes most of the time (5.7 FPS on an Apple M1 CPU, 64% detector, 30% ball
+motion stage). Full results,
 plots and discussion: [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md).
 
 ## 3. Configuration

@@ -3,6 +3,6 @@ SportsMOT,v_2QhNRucNC7E_c017,dev,player,YOLO11n detector,0.5,0.5,5911,484,711,92
 SportsMOT,v_dw7LOz17Omg_c067,test,player,YOLO11n detector,0.5,0.5,6210,2409,749,72.05,89.237,79.728,79.941
 SportsMOT,v_G-vNjfx1GGc_c008,test,player,YOLO11n detector,0.5,0.5,4351,577,222,88.291,95.145,91.59,94.664
 SportsMOT,v_i2_L4qquVg0_c007,test,player,YOLO11n detector,0.5,0.5,4518,473,310,90.523,93.579,92.026,92.172
-UVY-Track,soccer_V04,test,player,YOLO11n detector,0.5,0.5,2872,1540,522,65.095,84.62,73.584,81.153
-UVY-Track,soccer_V01,test,player,YOLO11n detector,0.5,0.5,1306,2934,1761,30.802,42.582,35.747,18.539
-UVY-Track,soccer_V03,test,player,YOLO11n detector,0.5,0.5,2511,2329,489,51.88,83.7,64.056,72.287
+UVY-Track,soccer_V04,test,player,YOLO11n detector,0.5,0.5,2874,1551,520,64.949,84.679,73.513,81.123
+UVY-Track,soccer_V01,test,player,YOLO11n detector,0.5,0.5,1310,2949,1757,30.758,42.713,35.763,18.619
+UVY-Track,soccer_V03,test,player,YOLO11n detector,0.5,0.5,2512,2316,488,52.03,83.733,64.18,72.334

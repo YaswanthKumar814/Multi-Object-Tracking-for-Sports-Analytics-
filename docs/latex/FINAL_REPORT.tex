@@ -12,49 +12,28 @@
 % ----------------------------------------------------------------------------
 \documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
-
+\usepackage[T1]{fontenc}
 \usepackage{cite}
-\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsmath,amssymb}
 \usepackage{graphicx}
-\usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{adjustbox}
 \usepackage{url}
-\usepackage{tikz}
-\usetikzlibrary{arrows.meta,positioning}
-
-\tikzset{
-  blk/.style ={draw, rounded corners=2pt, align=center, font=\scriptsize,
-               minimum height=9mm, minimum width=25mm, fill=blue!6},
-  dat/.style ={draw, align=center, font=\scriptsize,
-               minimum height=9mm, minimum width=22mm, fill=gray!12},
-  fin/.style ={draw, rounded corners=2pt, align=center, font=\scriptsize,
-               minimum height=14mm, minimum width=28mm, fill=green!8},
-  ar/.style  ={-{Latex[length=2mm]}, thick},
-  arD/.style ={-{Latex[length=2mm]}, thick, dashed}
-}
+\graphicspath{{figures/}}
 
 \begin{document}
 
 \title{Multi-Object Tracking for Sports Analytics:\\
-Player and Ball Tracking with YOLO11n, ByteTrack and a Kalman Filter}
+Player and Ball Tracking with YOLO11n, ByteTrack, a Kalman Filter and Motion-Based Ball Flights}
 
-\author{
-\IEEEauthorblockN{Ravva Siddhartha}
-\IEEEauthorblockA{\textit{Department of Computer Science}\\
-\textit{Amrita School of Computing}\\
-BL.EN.U4CSE23246}
-\and
-\IEEEauthorblockN{Pulapa Yaswanth Kumar}
-\IEEEauthorblockA{\textit{Department of Computer Science}\\
-\textit{Amrita School of Computing}\\
-BL.EN.U4CSE23245}
-\and
-\IEEEauthorblockN{Dr. Tripty Singh}
-\IEEEauthorblockA{\textit{Department of Computer Science}\\
-\textit{Amrita School of Computing}\\
-~}
-}
+% TODO before submitting: replace the bracketed fields with your details. For more
+% authors, add further \and \IEEEauthorblockN{...}\IEEEauthorblockA{...} blocks.
+\author{\IEEEauthorblockN{Yaswanth}
+\IEEEauthorblockA{\textit{[Department]} \\
+\textit{[Institution]}\\
+{[City, Country]} \\
+{[e-mail address]}}}
 
 \maketitle
 
@@ -64,7 +43,9 @@ players and the ball in monocular video on a CPU. A COCO-pretrained YOLO11n
 detector finds people and the ball in a single pass per frame, ByteTrack assigns
 persistent player identities, and a constant-velocity Kalman filter tracks the
 ball and predicts its position through short detection gaps, labelling every
-predicted position as such. The proposed player tracker is compared with SORT and
+predicted position as such. When the ball is struck and the detector loses the
+motion-blurred ball, camera-motion-compensated moving blobs linked into fast,
+smooth flights that must start at the ball let the tracker follow it. The proposed player tracker is compared with SORT and
 OC-SORT on identical cached detections from six test sequences of SportsMOT and
 UVY-Track (2,950 frames), with hyper-parameters chosen on a separate sequence. The
 ball tracker is compared with detection-only output on 13 sequences of UVY-Track
@@ -73,16 +54,17 @@ the fewest identity switches (51, against 60 for SORT and 106 for OC-SORT) and t
 highest recall (95.9\%), while tuned SORT reaches a higher HOTA (65.9 against
 62.6) because it outputs fewer boxes on people the benchmark does not annotate.
 On the partially labelled UVY-Track clips ByteTrack has the best OWTA (56.8). The
-Kalman ball tracker raises ball recall from 34.5\% to 43.3\% and F1 from 45.4\%
-to 49.3\% and merges 168 correct track segments into 47, at the cost of precision
-(66.4\% to 57.4\%). The detector accounts for 87\% of the processing time and is
-the main limit on accuracy. The proposed method is therefore not uniformly better
+proposed ball tracker raises ball precision from 66.4\% to 70.0\%, recall from
+34.8\% to 36.4\% and F1 from 45.7\% to 47.9\% over detection alone and merges 175
+correct track segments into 44; on a free kick its motion flights raise ball
+recall from 91.1\% to 99.4\%. The detector accounts for 64\% of the processing time
+and is the main limit on accuracy. The proposed method is therefore not uniformly better
 than the baselines; the paper reports where it helps, where it does not, and why.
 \end{abstract}
 
 \begin{IEEEkeywords}
 multi-object tracking, sports analytics, soccer, ball tracking, YOLO, ByteTrack,
-SORT, OC-SORT, Kalman filter, HOTA
+SORT, OC-SORT, Kalman filter, HOTA, frame differencing
 \end{IEEEkeywords}
 
 % =============================================================================
@@ -115,7 +97,11 @@ sequence disjoint from the test data;
 including an analysis of how partially labelled data invalidates
 false-positive-based metrics;
 \item a ball-tracking evaluation that reports the benefit and the cost of motion
-prediction separately.
+prediction separately;
+\item a motion-based extension of the ball tracker that follows a struck,
+motion-blurred ball which the generic detector misses, by linking
+camera-motion-compensated moving blobs into physically plausible flights that must
+start at the ball.
 \end{itemize}
 
 % =============================================================================
@@ -151,7 +137,10 @@ can exploit motion. Slicing-aided inference~\cite{sahi} improves small-object
 recall for generic detectors by running them on overlapping tiles. A common
 lightweight alternative, used here, is to keep a generic detector and add a
 single-target motion model that rejects implausible candidates and bridges short
-gaps.
+gaps. Classical broadcast ball trackers also use motion directly: trajectory-based
+methods~\cite{yu2006} generate many ball candidates and keep only the candidate
+chains whose motion is plausible for a ball. This work adds such a step for the
+ball in flight.
 
 \textbf{Detectors and metrics.} The YOLO family~\cite{yolo} performs detection in
 a single network pass; this work uses the COCO-pretrained~\cite{coco} YOLO11 nano
@@ -185,7 +174,8 @@ and a dedicated single-target Kalman tracker for the ball, evaluated separately.
 \textbf{Objectives.} (1) Detect players and the ball with a lightweight
 pretrained detector. (2) Track players with persistent identities using
 ByteTrack. (3) Track the ball with a Kalman filter that bridges short detection
-gaps without presenting a predicted position as a detection. (4) Export an
+gaps without presenting a predicted position as a detection, and that follows the
+ball in flight when the detector loses it. (4) Export an
 annotated video, a per-frame table and a run summary. (5) Compare with SORT and
 OC-SORT on identical detections, frames and ground truth. (6) Evaluate on three
 public datasets with standard metrics. (7) Make every result reproducible.
@@ -197,8 +187,8 @@ public datasets with standard metrics. (7) Make every result reproducible.
 \centering
 \includegraphics[width=0.92\textwidth]{fig_architecture.png}
 \caption{Architecture of the proposed system. One YOLO11n pass per frame serves
-players and ball; ByteTrack tracks the players and a Kalman filter tracks the
-ball. For the baselines only the player-tracker block is replaced by SORT or
+players and ball; ByteTrack tracks the players and a Kalman filter, extended with
+motion-based flights, tracks the ball. For the baselines only the player-tracker block is replaced by SORT or
 OC-SORT.}
 \label{fig:architecture}
 \end{figure*}
@@ -208,7 +198,7 @@ Fig.~\ref{fig:architecture} shows the pipeline. Each frame is decoded and passed
 once through the detector, which reports the COCO classes \emph{person} and
 \emph{sports ball}. Inexpensive geometric filters remove implausible boxes.
 Player boxes go to the multi-object tracker and ball candidates to the ball
-tracker. The tracked objects are drawn on the frame and streamed to a
+tracker, which also receives motion-based ball flights computed from the frames. The tracked objects are drawn on the frame and streamed to a
 comma-separated file; a summary is written at the end. Players are many similar
 objects that need global assignment, whereas the ball is a single small object
 that is often missed, so the two are tracked by different algorithms: this
@@ -266,11 +256,11 @@ standard deviation of 4 pixels. Four rules turn the filter of
 \emph{Gating.} A candidate is accepted only if its distance $d_{i}$ to the
 predicted position is within a gate
 \begin{equation}
-g_{k}=g_{0}+m_{k}\,\Delta g,
+g_{k}=\min\left(g_{0}+m_{k}\,\Delta g,\; g_{\max}\right),
 \label{eq:gate}
 \end{equation}
-with $g_{0}=80$ pixels, $\Delta g=20$ pixels and $m_{k}$ the number of consecutive
-frames without an accepted detection. Among several candidates with confidence
+with $g_{0}=80$ pixels, $\Delta g=20$ pixels, $g_{\max}=160$ pixels and $m_{k}$ the
+number of consecutive frames without an accepted detection. Among several candidates with confidence
 $c_{i}$ the one that maximises
 \begin{equation}
 s_{i}=c_{i}\left(1-\frac{d_{i}}{g_{k}}\right)
@@ -278,11 +268,14 @@ s_{i}=c_{i}\left(1-\frac{d_{i}}{g_{k}}\right)
 \end{equation}
 is taken. This rejects false balls elsewhere in the image.
 
-\emph{Confirmation.} A track is reported only after two detections, which
-suppresses one-frame false positives.
+\emph{Confirmation.} A new track needs a detection with confidence at least 0.3
+and is reported only after two detections, which suppresses one-frame false
+positives; weaker detections can only extend an existing track.
 
 \emph{Prediction through gaps.} With no accepted candidate, the filter coasts for
-up to 15 frames and the output is labelled \emph{predicted}.
+up to 6 frames (0.2~s) and the output is labelled \emph{predicted}. It does not
+coast right after a sudden jump of the measured position (a kick), because the new
+velocity is unknown.
 
 \emph{Re-acquisition.} A detection with confidence at least 0.5 outside the gate
 restarts the track after three missed frames, which handles long passes and
@@ -292,6 +285,44 @@ Predicted positions are kept distinct from end to end: a different marker and th
 text ``ball (predicted)'' in the video, a \emph{predicted} status with an empty
 confidence in the exported table, separate counts in the run summary, and
 separate columns in every ball table of this paper.
+
+\subsection{Ball in Flight: Motion Flights}
+A struck ball is motion-blurred into a pale streak and the COCO detector almost
+never fires on it, while extrapolating the last velocity through a kick is wrong
+(Section~\ref{sec:ballresults}). Three components follow the ball in flight.
+
+\emph{Motion candidates.} The two previous frames are aligned to the current one
+with a similarity transform estimated from ORB features~\cite{orb} with
+RANSAC~\cite{ransac}, which cancels camera pan and zoom. A pixel is moving if it
+differs from both aligned frames (three-frame differencing using only past frames,
+so the ghost at the ball's old position is suppressed). Bright, low-saturation
+moving pixels are grouped into components, and small, compact components are
+candidates. They are noisy by design: boots, socks and shirt numbers also move.
+
+\emph{Flights.} Candidates are linked frame to frame under a constant-velocity
+model. A chain counts as a flight while it has at least six points, a median
+speed of at least 8 pixels per frame and a smooth path, with a median change of
+velocity of at most $\max(4, 0.3\,\bar{v})$ pixels for median speed $\bar{v}$;
+this is re-checked every frame. Limbs swing back and forth and running players are
+slower, so they rarely qualify.
+
+\emph{Adoption.} A flight is used as the ball only if it was launched from the
+ball: its first velocity $\mathbf{v}_{0}$, run backwards from its first point
+$\mathbf{p}_{0}$ at frame $t_{0}$ to the frame $t_{s}$ at which the detector last
+saw the ball at $\mathbf{b}$, must satisfy
+\begin{equation}
+\left\lVert \mathbf{p}_{0}-\mathbf{v}_{0}\,(t_{0}-t_{s})-\mathbf{b}\right\rVert \le 35~\text{pixels}.
+\label{eq:launch}
+\end{equation}
+Anchors are detector sightings only, so a wrong flight can never anchor the next
+one. A confident detection inside the gate prevents a new flight from being
+adopted, while a flight already being followed outranks single detections, which
+during a shot are often the goalkeeper's glove. When the followed flight ends
+abruptly (net, save, bounce) the ball is reported lost rather than extrapolated. A
+flight is confirmed only after six frames, so the pipeline holds its output eight
+frames and fills in the first frames of the flight. Flight positions are
+observations, reported as detected with the class name \emph{ball (motion)} and no
+detector confidence.
 
 % =============================================================================
 \section{Datasets}
@@ -411,12 +442,19 @@ ByteTrack (proposed), tuned & 30 & 1 & 0.2 & 0.5 & 0.5 \\
 \end{adjustbox}
 \end{table}
 
-For the ball, three outputs are compared on identical candidates: the most
+For the ball, four outputs are compared on identical candidates: the most
 confident candidate of each frame with no temporal reasoning (\emph{detection
 only}); the positions that the Kalman tracker reports from a detection, as an
-ablation; and the full proposed tracker (detected and predicted positions). The
-ball tracker runs with its default configuration and is not tuned on any
-evaluated sequence.
+ablation; the Kalman tracker on detector candidates alone (detected and predicted
+positions, \emph{YOLO only}), as an ablation without motion flights; and the full
+proposed tracker with motion flights, exactly as in the application. The Kalman
+part runs with its default configuration and is not tuned on any evaluated
+sequence. The motion-flight rules, however, were developed while inspecting the
+UVY-Track clip \texttt{soccer\_V04}, and a first full run on InFactory exposed two
+failure modes (a camera cut and a fast object passing the ball) that led to two
+further rules, so the ball results of the proposed method are not from fully
+held-out data. A further clip, \texttt{soccer\_V02}, never used for any decision,
+was checked qualitatively.
 
 \subsection{Metrics}
 Player tracking is scored with the evaluation module of the \texttt{trackers}
@@ -462,7 +500,7 @@ frames. Ball identity switches are reported only for UVY-Track, which has ball
 identities.
 
 \subsection{Implementation and Hardware}
-All experiments ran on an Intel Core 7 150U laptop CPU (10 physical / 12 logical cores), 15.7~GB RAM, no GPU, Windows~11, Python~3.11.9, PyTorch~2.14.1+cpu with 8 threads, Ultralytics~8.4.182, \texttt{trackers}~2.6.1, \texttt{supervision}~0.31.0 and OpenCV~5.0.0. The system has 109 automated tests,
+All experiments ran on an Apple M1 CPU (8 physical / 8 logical cores), 8.0~GB RAM, no GPU used (device: cpu), macOS, Python~3.14.6, PyTorch~2.15.0 with 7 threads, Ultralytics~8.4.198, \texttt{trackers}~2.6.1, \texttt{supervision}~0.31.3 and OpenCV~5.0.0. The system has 121 automated tests,
 including an end-to-end test of the full pipeline. All results are reproduced by
 one command in the project repository\footnote{\url{https://github.com/YaswanthKumar814/Multi-Object-Tracking-for-Sports-Analytics-}};
 the evaluated sequences and frame ranges are fixed in a manifest file. The
@@ -491,7 +529,7 @@ Dataset & Role & Seq. & Prec. & Rec. & F1 & AP@0.5 \\
 \midrule
 SportsMOT & dev & 1 & 92.4 & 89.3 & 90.8 & 90.1 \\
 SportsMOT & test & 3 & 81.3 & 92.2 & 86.4 & 88.9 \\
-UVY-Track & test & 3 & 49.6$^{\dagger}$ & 70.7 & 58.3$^{\dagger}$ & 57.3$^{\dagger}$ \\
+UVY-Track & test & 3 & 49.6$^{\dagger}$ & 70.8 & 58.3$^{\dagger}$ & 57.4$^{\dagger}$ \\
 \bottomrule
 \multicolumn{7}{@{}l}{$^{\dagger}$Not meaningful: only part of the people are labelled.} \\
 \end{tabular}
@@ -592,9 +630,9 @@ selected setting. Circle: shared default setting.}
 \subsection{Player Tracking on UVY-Track}
 Table~\ref{tab:uvy} reports the metrics that remain valid when only part of the
 people are labelled. On these the trackers are close. ByteTrack has the best OWTA
-(56.8), the highest detection recall (58.7), the fewest identity switches (23)
+(56.8), the highest detection recall (58.7), the fewest identity switches (24)
 and the fewest missed boxes; SORT has a marginally higher AssA and the fewest
-fragmentations; OC-SORT has almost twice as many identity switches (44). For
+fragmentations; OC-SORT has almost twice as many identity switches (47). For
 completeness, MOTA on this dataset is negative for every tracker (between
 $-32$ and $-93$), which reflects the unlabelled people and not tracker errors.
 The low-resolution clip \texttt{soccer\_V01} ($636\times360$ pixels, people about
@@ -612,22 +650,23 @@ Parameters). Only Metrics That Do Not Count False Positives Are Shown}
 \toprule
 Tracker & OWTA & DetRe & AssA & IDSW & Frag & MT & FN \\
 \midrule
-SORT & 55.8 & 56.4 & \textbf{57.4} & 25 & \textbf{147} & \textbf{16} & 2{,}504 \\
-OC-SORT & 54.5 & 57.5 & 54.2 & 44 & 193 & \textbf{16} & 2{,}366 \\
-ByteTrack (proposed) & \textbf{56.8} & \textbf{58.7} & 57.3 & \textbf{23} & 165 & \textbf{16} & \textbf{2{,}243} \\
+SORT & 56.1 & 56.4 & \textbf{58.2} & 26 & \textbf{144} & \textbf{16} & 2{,}524 \\
+OC-SORT & 54.3 & 57.6 & 53.9 & 47 & 185 & \textbf{16} & 2{,}363 \\
+ByteTrack (proposed) & \textbf{56.8} & \textbf{58.7} & 57.3 & \textbf{24} & 160 & \textbf{16} & \textbf{2{,}232} \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 \end{table}
 
 \subsection{Ball Detection and Tracking}
+\label{sec:ballresults}
 Table~\ref{tab:ball} summarises the ball results on 13 sequences (3,019 labelled
 frames, 2,402 with a visible ball); Fig.~\ref{fig:prf} shows precision, recall
 and F1.
 
 \begin{table*}[t]
-\caption{Ball Results: Detection Only Versus the Kalman Ball Tracker on Identical
-Candidates. AP@0.5 Is Computed over All Detector Candidates. Coverage Is the
+\caption{Ball Results: Detection Only Versus the Kalman Ball Tracker With and
+Without Motion Flights on Identical Candidates. AP@0.5 Is Computed over All Detector Candidates. Coverage Is the
 Share of Labelled Frames with an Output. Frames: Detected, Predicted, No Output. Segments: Number and Mean Length in Frames}
 \label{tab:ball}
 \centering
@@ -640,17 +679,20 @@ Share of Labelled Frames with an Output. Frames: Detected, Predicted, No Output.
 \cmidrule(lr){3-5}\cmidrule(lr){6-8}\cmidrule(lr){11-13}\cmidrule(lr){14-15}
 Data & Method & Prec. & Rec. & F1 & Prec. & Rec. & F1 & (\%) & (\%) & Det. & Pred. & None & No. & Mean len. \\
 \midrule
-UVY-Track & Detection only & 62.4 & 34.6 & 44.5 & 25.4 & 14.1 & 18.1 & 12.0 & 53.6 & 841 & 0 & 728 & 95 & 5.5 \\
-UVY-Track & Kalman, detected only & 61.1 & 29.0 & 39.3 & 30.4 & 14.4 & 19.6 & -- & 45.9 & 720 & 0 & 849 & 62 & 7.1 \\
-UVY-Track & Kalman (proposed) & 54.8 & 43.2 & 48.3 & 19.5 & 15.3 & 17.2 & -- & 76.2 & 720 & 476 & 373 & 11 & 59.6 \\
+UVY-Track & Detection only & 62.6 & 35.1 & 45.0 & 24.8 & 13.9 & 17.8 & 12.0 & 54.3 & 852 & 0 & 717 & 102 & 5.2 \\
+UVY-Track & Kalman, detected only & 67.0 & 28.1 & 39.6 & 34.2 & 14.4 & 20.2 & -- & 40.6 & 637 & 0 & 932 & 43 & 9.9 \\
+UVY-Track & Kalman (YOLO only) & 65.6 & 35.2 & 45.8 & 27.8 & 14.9 & 19.4 & -- & 51.9 & 637 & 177 & 755 & 10 & 53.4 \\
+UVY-Track & Kalman + motion (proposed) & 64.2 & 36.1 & 46.2 & 28.1 & 15.8 & 20.2 & -- & 54.4 & 672 & 182 & 715 & 11 & 49.8 \\
 \midrule
 InFactory & Detection only & 74.5 & 34.4 & 47.1 & 66.9 & 30.9 & 42.3 & 26.0 & 28.1 & 408 & 0 & 1{,}042 & 73 & 4.2 \\
-InFactory & Kalman, detected only & 85.1 & 30.4 & 44.8 & 74.7 & 26.7 & 39.3 & -- & 21.8 & 316 & 0 & 1{,}134 & 61 & 4.4 \\
-InFactory & Kalman (proposed) & 62.2 & 43.4 & 51.2 & 46.2 & 32.2 & 38.0 & -- & 42.6 & 316 & 301 & 833 & 36 & 10.7 \\
+InFactory & Kalman, detected only & 92.5 & 27.8 & 42.8 & 80.1 & 24.1 & 37.0 & -- & 18.3 & 266 & 0 & 1{,}184 & 50 & 4.9 \\
+InFactory & Kalman (YOLO only) & 82.5 & 36.9 & 51.0 & 63.5 & 28.4 & 39.2 & -- & 27.2 & 266 & 129 & 1{,}055 & 33 & 9.9 \\
+InFactory & Kalman + motion (proposed) & 82.5 & 36.9 & 51.0 & 63.5 & 28.4 & 39.2 & -- & 27.2 & 266 & 129 & 1{,}055 & 33 & 9.9 \\
 \midrule
-All (13 seq.) & Detection only & 66.4 & 34.5 & 45.4 & 39.0 & 20.3 & 26.7 & 16.3 & 41.4 & 1{,}249 & 0 & 1{,}770 & 168 & 4.9 \\
-All (13 seq.) & Kalman, detected only & 68.4 & 29.5 & 41.2 & 43.9 & 18.9 & 26.5 & -- & 34.3 & 1{,}036 & 0 & 1{,}983 & 123 & 5.8 \\
-All (13 seq.) & Kalman (proposed) & 57.4 & 43.3 & 49.3 & 28.6 & 21.6 & 24.6 & -- & 60.1 & 1{,}036 & 777 & 1{,}206 & 47 & 22.1 \\
+All (13 seq.) & Detection only & 66.4 & 34.8 & 45.7 & 38.4 & 20.1 & 26.4 & 16.3 & 41.7 & 1{,}260 & 0 & 1{,}759 & 175 & 4.8 \\
+All (13 seq.) & Kalman, detected only & 74.5 & 28.0 & 40.7 & 47.7 & 17.9 & 26.1 & -- & 29.9 & 903 & 0 & 2{,}116 & 93 & 7.2 \\
+All (13 seq.) & Kalman (YOLO only) & 71.1 & 35.8 & 47.6 & 39.5 & 19.9 & 26.4 & -- & 40.0 & 903 & 306 & 1{,}810 & 43 & 20.0 \\
+All (13 seq.) & Kalman + motion (proposed) & 70.0 & 36.4 & 47.9 & 39.3 & 20.4 & 26.9 & -- & 41.4 & 938 & 311 & 1{,}770 & 44 & 19.9 \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -660,38 +702,52 @@ All (13 seq.) & Kalman (proposed) & 57.4 & 43.3 & 49.3 & 28.6 & 21.6 & 24.6 & --
 \centering
 \includegraphics[width=\textwidth]{fig_detection_prf.png}
 \caption{Precision, recall and F1. Left: player detection. Centre and right: the
-ball on UVY-Track and on InFactory, detection only against the Kalman tracker
-(distance criterion).}
+ball on UVY-Track and on InFactory: detection only, the Kalman tracker on detector
+candidates alone, and the proposed tracker with motion flights (distance criterion).}
 \label{fig:prf}
 \end{figure*}
 
 \emph{The detector is the bottleneck.} The COCO \emph{sports ball} class finds
 the ball in only about a third of the frames in which it is visible (recall
-34.5\%; AP@0.5 of 16.3\% over all candidates). When it does respond to the ball
+34.8\%; AP@0.5 of 16.3\% over all candidates). When it does respond to the ball
 it is accurate: correct outputs lie about 2 pixels from the true centre.
 
-\emph{Effect of the Kalman tracker.} Recall rises from 34.5\% to 43.3\% and F1
-from 45.4\% to 49.3\% under the distance criterion, and coverage of labelled
-frames from 41\% to 60\%. F1 improves on both datasets. The ball track also
-becomes far more continuous: 168 short correct segments merge into 47, and their
-mean length grows from 4.9 to 22.1 frames. The tracker recovers 353
-visible-ball frames that detection alone misses and loses 142 that detection
-alone had (the first detection of each track, which is held back for
-confirmation, and detections outside the gate). On UVY-Track, the only dataset
-with ball identities, the track identity changes three times.
+\emph{Effect of the Kalman tracker.} Over detection alone, precision rises from
+66.4\% to 71.1\%, recall from 34.8\% to 35.8\% and F1 from 45.7\% to 47.6\% under
+the distance criterion, and F1 improves on both datasets. The tracker is
+deliberately conservative (a confidence of at least 0.3 to start a track, a capped
+gate, at most six coasted frames and none right after a kick). A looser earlier
+version reached a higher recall (43.3\%) and F1 (49.3\%), but only 42.6\% of its
+predicted positions were correct; the current version trades some recall for
+positions that can be trusted. The ball track also becomes far more continuous:
+with the proposed tracker 175 short correct segments merge into 44 and their mean
+length grows from 4.8 to 19.9 frames. It recovers 249 visible-ball frames that
+detection alone misses and loses 212 that detection alone had (the first
+detection of each track, which is held back for confirmation, weak detections
+that may not start a track, and detections outside the gate). On UVY-Track, the
+only dataset with ball identities, the track identity changes four times.
 
-\emph{The cost is precision}, which falls from 66.4\% to 57.4\%.
-Table~\ref{tab:ballpred} separates the two kinds of output. Detected positions
-accepted by the tracker are slightly more precise than raw detections (68.4\%
+\emph{Effect of motion flights.} On top of the Kalman tracker, recall rises from
+35.8\% to 36.4\% and F1 from 47.6\% to 47.9\%. Flights fire only where the ball is
+struck and visible in flight: on every InFactory clip and on two of the three
+UVY-Track clips the output is identical to the Kalman tracker. On the free kick of
+\texttt{soccer\_V04} the Kalman tracker loses the ball when it is struck (recall
+91.1\%), whereas with motion flights the shot is followed from the boot into the
+net (recall 99.4\%, Fig.~\ref{fig:balltraj}). Precision there falls from 97.5\% to
+84.8\%, but all 24 outputs counted as false lie in frames in which the annotators
+marked no ball (the most blurred part of the flight and the ball inside the net);
+inspection shows these positions on the ball.
+
+Table~\ref{tab:ballpred} separates detected and predicted outputs. Detected
+positions accepted by the tracker are more precise than raw detections (73.2\%
 against 66.4\%), because gating and confirmation reject isolated false balls.
-Predicted positions are correct only 42.6\% of the time: they are right when the
-ball rolls or is briefly occluded and wrong when it is kicked or changes
-direction during the gap, because the filter extrapolates the last velocity
-(Fig.~\ref{fig:balltraj}). This is the reason for reporting predicted positions
-separately.
+Predicted positions are correct 60.1\% of the time: they are right when the ball
+rolls or is briefly occluded and wrong when it changes direction during the gap,
+because the filter extrapolates the last velocity. This is the reason for
+reporting predicted positions separately.
 
 \begin{table}[t]
-\caption{Kalman Ball Tracker: Precision of Detected and of Predicted Positions
+\caption{Proposed Ball Tracker: Precision of Detected and of Predicted Positions
 (Distance Criterion)}
 \label{tab:ballpred}
 \centering
@@ -703,42 +759,42 @@ separately.
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Data & Frames & Prec. (\%) & Frames & Prec. (\%) \\
 \midrule
-UVY-Track & 720 & 61.1 & 476 & 45.4 \\
-InFactory & 316 & 85.1 & 301 & 38.2 \\
-All & 1{,}036 & 68.4 & 777 & 42.6 \\
+UVY-Track & 672 & 65.6 & 182 & 58.8 \\
+InFactory & 266 & 92.5 & 129 & 62.0 \\
+All & 938 & 73.2 & 311 & 60.1 \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
 \end{table}
 
-\emph{Strict localisation.} Under the IoU criterion F1 does not improve (26.7\%
-to 24.6\%), because a predicted box is rarely within an IoU of 0.5 of a ball that
+\emph{Strict localisation.} Under the IoU criterion F1 barely changes (26.4\% to
+26.9\%), because a predicted box is rarely within an IoU of 0.5 of a ball that
 is about 15 pixels wide. On UVY-Track the IoU-based numbers are low for every
 method because of the loose ground-truth boxes described in Section~\ref{sec:datasets}; the
 distance criterion is the meaningful one there.
 
-\emph{Per-sequence behaviour is uneven.} F1 improves clearly on four sequences
-(for example from 51.2\% to 67.9\% on \texttt{soccer\_V03}), stays at zero on
-three clips in which the detector never finds the ball, and decreases on six (for
-example from 89.3\% to 83.4\% on \texttt{soccer\_V04}, where all 40 positions
-predicted after the shot are wrong). The pooled improvement comes from the longer
-sequences. Fig.~\ref{fig:ballstatus} shows the share of detected, predicted and
+\emph{Per-sequence behaviour is uneven.} Against detection only, F1 improves on
+five sequences (for example from 45.6\% to 78.7\% on \texttt{71125020}), stays at
+zero on three clips in which the detector never finds the ball, and decreases on
+five (for example from 51.5\% to 47.5\% on \texttt{soccer\_V03}, and on
+\texttt{7d503a7a}, where the track follows something other than the ball). Fig.~\ref{fig:ballstatus} shows the share of detected, predicted and
 lost frames per sequence.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{fig_ball_trajectory.png}
-\caption{Ball trajectory on \texttt{soccer\_V03} with ground truth. Dots:
-detected. Triangles: predicted by the Kalman filter. Marks on the time axis:
-frames without output. Straight runs of triangles that leave the true path are
-extrapolations after the ball changed direction.}
+\caption{Ball trajectory of the proposed tracker on the free kick of
+\texttt{soccer\_V04} with ground truth. Dots: detected, by the detector or by a
+motion flight. Triangles: predicted by the Kalman filter. Marks on the time axis:
+frames without output. The arc is the shot, followed by a motion flight; the
+ground truth has a gap during the most blurred part of the flight.}
 \label{fig:balltraj}
 \end{figure}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{fig_ball_status.png}
-\caption{Ball track status per sequence with the Kalman tracker. Diamonds mark
+\caption{Ball track status per sequence with the proposed tracker. Diamonds mark
 the share of frames in which the ball is visible.}
 \label{fig:ballstatus}
 \end{figure}
@@ -749,7 +805,7 @@ settings on the first 200 frames of one SportsMOT sequence (players) and on two
 InFactory clips (ball). Speed was measured by alternating the two models frame by
 frame so that both saw the same machine state (Table~\ref{tab:models}). On this
 subset YOLO11n is clearly better for players (F1 of 81.2\% against 71.7\%),
-mainly through higher precision, and about 15\% faster. For the ball the two
+mainly through higher precision, and about 5\% faster. For the ball the two
 models are practically equal. The two ball clips are among the easier ones, so
 their ball scores are above the averages of Table~\ref{tab:ball}. This supports
 the choice of YOLO11n but is a small-sample comparison.
@@ -765,10 +821,10 @@ the choice of YOLO11n but is a small-sample comparison.
 \toprule
 Model & Target & Frames & Prec. & Rec. & F1 & AP@0.5 & ms/fr. \\
 \midrule
-YOLOv8n & player & 200 & 60.9 & 87.1 & 71.7 & 71.7 & 424 \\
-YOLOv8n & ball & 265 & 83.0 & 67.0 & 74.1 & 51.0 & 424 \\
-YOLO11n & player & 200 & 74.5 & 89.2 & 81.2 & 79.0 & 360 \\
-YOLO11n & ball & 265 & 88.8 & 64.8 & 74.9 & 51.2 & 360 \\
+YOLOv8n & player & 200 & 60.9 & 87.1 & 71.7 & 71.7 & 112 \\
+YOLOv8n & ball & 265 & 83.0 & 67.0 & 74.1 & 51.0 & 112 \\
+YOLO11n & player & 200 & 74.5 & 89.2 & 81.2 & 79.0 & 106 \\
+YOLO11n & ball & 265 & 88.8 & 64.8 & 74.9 & 51.2 & 106 \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -777,15 +833,16 @@ YOLO11n & ball & 265 & 88.8 & 64.8 & 74.9 & 51.2 & 360 \\
 \subsection{Runtime}
 Table~\ref{tab:runtime} and Fig.~\ref{fig:runtime} give the median time per
 frame of every stage, measured over 150 frames of a $1280\times720$ sequence on
-an idle machine on mains power. The detector takes about 87\% of the time. The
-trackers cost a few milliseconds, so the choice of tracker changes throughput by
-about 1\%: the full pipeline runs at 3.03 frames per second with
-ByteTrack, 3.04 with SORT and 2.99 with OC-SORT. SORT is the
+an idle machine on mains power. The detector takes 64\% of the time and the ball
+motion stage (feature-based frame alignment, differencing and flight linking)
+another 30\%. The player trackers cost about a millisecond, so the choice of
+tracker changes throughput by under 1\%: the full pipeline runs at 5.68 frames per second with
+ByteTrack, 5.68 with SORT and 5.65 with OC-SORT. SORT is the
 cheapest tracker, ByteTrack costs slightly more for its second association stage,
 and OC-SORT is two to three times slower than both. The system is therefore an
-offline analysis tool on this hardware. Power state matters: the same benchmark
-on battery, with the processor throttled, measured about 1,000 ms per frame for
-detection and about one frame per second overall.
+offline analysis tool on this hardware; disabling motion flights removes the
+motion stage. Power state matters: on battery the processor is throttled and every
+timing changes by a large factor, so the power source is recorded with the results.
 
 \begin{table}[t]
 \caption{Median Processing Time per Frame}
@@ -797,17 +854,18 @@ detection and about one frame per second overall.
 \toprule
 Stage & Time (ms) & Share (\%) \\
 \midrule
-Detection & 287.25 & 86.9 \\
-Video encoding & 17.39 & 5.3 \\
-Frame reading & 11.25 & 3.4 \\
-Drawing annotations & 8.70 & 2.6 \\
-Player filter + ByteTrack & 5.58 & 1.7 \\
-Ball filter + Kalman tracker & 0.30 & 0.1 \\
+Detection & 112.63 & 64.0 \\
+Ball motion: camera compensation + flight linking & 52.83 & 30.0 \\
+Video encoding & 4.45 & 2.5 \\
+Frame reading & 4.32 & 2.5 \\
+Drawing annotations & 1.11 & 0.6 \\
+Player filter + ByteTrack & 0.71 & 0.4 \\
+Ball filter + Kalman tracker & 0.03 & 0.0 \\
 \midrule
-\textbf{Total (proposed pipeline)} & \textbf{330.5} & 100.0 \\
+\textbf{Total (proposed pipeline)} & \textbf{176.1} & 100.0 \\
 \midrule
-Player filter + SORT (baseline) & 3.52 & -- \\
-Player filter + OC-SORT (baseline) & 9.80 & -- \\
+Player filter + SORT (baseline) & 0.61 & -- \\
+Player filter + OC-SORT (baseline) & 1.59 & -- \\
 \bottomrule
 \end{tabular}
 \end{adjustbox}
@@ -823,10 +881,13 @@ of the full pipeline. Right: time per stage of the proposed system.}
 
 \subsection{Qualitative Results}
 The application was run end to end on the UVY-Track clip \texttt{soccer\_V04}
-(241 frames, a free kick and a goal). It processed the clip in 81 seconds (3.0
-frames per second), produced 31 player track identities with a median track
-length of 209 frames, and reported the ball in 199 frames, of which 159 were
-detected and 40 predicted. Fig.~\ref{fig:demo} shows a frame of the annotated
+(241 frames, a free kick and a goal). It processed the clip in 46 seconds (5.2
+frames per second), produced 33 player track identities with a median track
+length of 209 frames, and reported the ball in 197 frames, of which 190 were
+detected (by the detector or a motion flight) and 7 predicted; the shot is
+followed into the net. On a further, previously unseen fan-filmed penalty
+shoot-out (\texttt{soccer\_V02}, 1,085 frames) a penalty is likewise followed from
+the spot past the diving goalkeeper into the net. Fig.~\ref{fig:demo} shows a frame of the annotated
 output. Figs.~\ref{fig:trajectories} and~\ref{fig:heatmap} show player
 trajectories and a position heatmap for a SportsMOT sequence; both are in image
 coordinates, so camera motion is not compensated.
@@ -873,12 +934,17 @@ results are not comparable with published leaderboards.
 \item \emph{Partial labels.} No single dataset evaluates the whole system:
 SportsMOT has no ball labels, UVY-Track labels only part of the people, and
 InFactory has neither player labels nor ball identities.
-\item \emph{Ball predictions.} A constant-velocity model cannot follow a kicked
-ball; more than half of the predicted positions are wrong, and the ball tracker
-was not tuned because no separate ball tuning set was available.
-\item \emph{Scope.} There is no camera-motion compensation, re-identification,
-team assignment or pitch calibration, and throughput is about three frames per
-second on a laptop processor.
+\item \emph{Ball predictions.} A constant-velocity model cannot follow a direction
+change; 40\% of the predicted positions are wrong, and the tracker sometimes
+follows a false positive or a second real ball beside the pitch.
+\item \emph{Motion flights are narrow.} They help only when the ball is struck and
+visible in flight, must start where the detector last saw the ball, and are
+switched off when the global camera model fails (cuts, dissolves, fast zoom).
+Their rules were developed on UVY-Track and refined after a first InFactory run,
+because no separate ball tuning set was available.
+\item \emph{Scope.} There is no camera-motion compensation for the players,
+re-identification, team assignment or pitch calibration, and throughput is about
+six frames per second on an Apple M1 processor.
 \end{itemize}
 
 % =============================================================================
@@ -888,9 +954,9 @@ The most valuable next step is a soccer-specific detector with separate classes
 for players, referees, goalkeepers and the ball, which addresses the dominant
 error source for both players and ball. Tiled high-resolution inference for the
 ball is already supported by the application but has not been evaluated. The
-ball motion model can be improved by limiting coasting for immature tracks,
-damping the velocity while coasting and smoothing offline with a
-forward-backward pass. Camera-motion compensation and appearance-based
+ball motion model can be improved with a gravity-aware model for flights and
+offline forward-backward smoothing, and motion flights should be evaluated on a
+dedicated, fully labelled ball tuning and test split. Camera-motion compensation and appearance-based
 re-identification, as in BoT-SORT~\cite{botsort}, would steady trajectories and
 identities. Further steps are team assignment from jersey colour, pitch
 calibration for positions in metres, accelerated inference for real-time
@@ -905,10 +971,11 @@ three public datasets with a reproducible protocol. With identical detections,
 ByteTrack produced the fewest identity switches and the highest recall on both
 tracking datasets and the best OWTA on UVY-Track, while tuned SORT obtained the
 best HOTA, MOTA and IDF1 on SportsMOT; OC-SORT was the weakest in association and
-the slowest. The dedicated Kalman ball tracker improved ball recall, F1 and above
-all the continuity of the ball track over detection alone, but its predicted
-positions are correct less than half of the time, which justifies labelling them
-separately. Across all experiments the generic lightweight detector, not the
+the slowest. The dedicated Kalman ball tracker improved ball precision, F1 and
+above all the continuity of the ball track over detection alone, and motion-based
+flights let it follow a struck ball that the detector loses without changing the
+result on clips without such a shot. Its predicted positions are still wrong 40\%
+of the time, which justifies labelling them separately. Across all experiments the generic lightweight detector, not the
 tracker, limits both accuracy and speed, so a soccer-specific detector is the
 most promising improvement.
 
@@ -940,6 +1007,9 @@ most promising improvement.
 \bibitem{idf1} E. Ristani, F. Solera, R. Zou, R. Cucchiara, and C. Tomasi, ``Performance measures and a data set for multi-target, multi-camera tracking,'' in \emph{Proc. Eur. Conf. Comput. Vis. Workshops (ECCVW)}, 2016.
 \bibitem{trackers} Roboflow, ``trackers,'' software, version 2.6.1, 2026. [Online]. Available: \url{https://github.com/roboflow/trackers}
 \bibitem{trackeval} J. Luiten and A. Hoffhues, ``TrackEval,'' software, 2020. [Online]. Available: \url{https://github.com/JonathonLuiten/TrackEval}
+\bibitem{yu2006} X. Yu, H. W. Leong, C. Xu, and Q. Tian, ``Trajectory-based ball detection and tracking in broadcast soccer video,'' \emph{IEEE Trans. Multimedia}, vol. 8, no. 6, 2006.
+\bibitem{orb} E. Rublee, V. Rabaud, K. Konolige, and G. Bradski, ``ORB: An efficient alternative to SIFT or SURF,'' in \emph{Proc. IEEE Int. Conf. Comput. Vis. (ICCV)}, 2011.
+\bibitem{ransac} M. A. Fischler and R. C. Bolles, ``Random sample consensus: A paradigm for model fitting with applications to image analysis and automated cartography,'' \emph{Commun. ACM}, vol. 24, no. 6, 1981.
 \bibitem{owta} Y. Liu, I. E. Zulfikar, J. Luiten, A. Dave, D. Ramanan, B. Leibe, A. O\v{s}ep, and L. Leal-Taix\'e, ``Opening up open world tracking,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2022.
 \end{thebibliography}
 

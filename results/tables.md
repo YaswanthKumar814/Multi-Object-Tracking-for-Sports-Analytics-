@@ -26,17 +26,17 @@
 
 | Method | HOTA | DetA | AssA | MOTA | IDF1 | IDSW | FP | FN | Frag | MT | ML | Prec. | Rec. |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| YOLO11n + SORT | **54.69** | **46.57** | **64.63** | **29.41** | **60.67** | 85 | **14854** | 3288 | **305** | 75 | 1 | **60.27** | 87.27 |
-| YOLO11n + OC-SORT | 47.77 | 40.31 | 56.94 | 3.74 | 50.72 | 150 | 21522 | 3183 | 423 | 77 | **0** | 51.26 | 87.67 |
-| YOLO11n + ByteTrack (proposed) | 50.09 | 39.49 | 63.91 | -0.82 | 54.19 | **74** | 23046 | **2913** | 333 | **78** | **0** | 49.85 | **88.72** |
+| YOLO11n + SORT | **54.59** | **46.26** | **64.83** | **28.27** | **60.40** | 86 | **15127** | 3308 | **302** | 75 | 1 | **59.81** | 87.19 |
+| YOLO11n + OC-SORT | 47.75 | 40.35 | 56.85 | 3.91 | 50.77 | 153 | 21478 | 3180 | 415 | 77 | **0** | 51.32 | 87.68 |
+| YOLO11n + ByteTrack (proposed) | 50.24 | 39.73 | 63.90 | 0.28 | 54.33 | **75** | 22773 | **2902** | 328 | **78** | **0** | 50.16 | **88.76** |
 
 ## tracking_all_default
 
 | Method | HOTA | DetA | AssA | MOTA | IDF1 | IDSW | FP | FN | Frag | MT | ML | Prec. | Rec. |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| YOLO11n + SORT | 50.74 | 39.35 | **65.82** | -1.43 | 54.91 | **66** | 23154 | **2971** | **338** | **77** | **0** | 49.67 | **88.49** |
-| YOLO11n + OC-SORT | **55.23** | **51.54** | 59.56 | **48.70** | **63.50** | 84 | **8093** | 5068 | 426 | 64 | 1 | **71.94** | 80.37 |
-| YOLO11n + ByteTrack (proposed) | 50.39 | 39.39 | 64.83 | -0.99 | 54.67 | **66** | 23031 | 2979 | **338** | **77** | **0** | 49.79 | 88.46 |
+| YOLO11n + SORT | 50.84 | 39.47 | **65.88** | -0.86 | 55.03 | **67** | 23008 | **2968** | **332** | **77** | **0** | 49.83 | **88.50** |
+| YOLO11n + OC-SORT | **54.94** | **51.47** | 59.04 | **48.55** | **63.02** | 87 | **8127** | 5072 | 422 | 64 | 1 | **71.86** | 80.36 |
+| YOLO11n + ByteTrack (proposed) | 50.40 | 39.48 | 64.71 | -0.57 | 54.65 | **67** | 22924 | 2978 | **332** | **77** | **0** | 49.91 | 88.47 |
 
 ## tracking_sportsmot
 
@@ -58,17 +58,17 @@
 
 | Method | HOTA | DetA | AssA | MOTA | IDF1 | IDSW | FP | FN | Frag | MT | ML | Prec. | Rec. |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| YOLO11n + SORT | **38.50** | **27.25** | **57.41** | **-31.96** | **46.85** | 25 | **9956** | 2504 | **147** | **16** | 1 | **41.13** | 73.53 |
-| YOLO11n + OC-SORT | 33.46 | 21.94 | 54.22 | -85.50 | 38.05 | 44 | 15140 | 2366 | 193 | **16** | **0** | 31.91 | 74.99 |
-| YOLO11n + ByteTrack (proposed) | 34.31 | 21.62 | 57.34 | -93.25 | 39.06 | **23** | 16017 | **2243** | 165 | **16** | **0** | 31.07 | **76.29** |
+| YOLO11n + SORT | **38.47** | **26.86** | **58.20** | **-35.07** | **46.35** | 26 | **10229** | 2524 | **144** | **16** | 1 | **40.41** | 73.32 |
+| YOLO11n + OC-SORT | 33.39 | 21.99 | 53.91 | -85.03 | 38.14 | 47 | 15096 | 2363 | 185 | **16** | **0** | 31.98 | 75.02 |
+| YOLO11n + ByteTrack (proposed) | 34.52 | 21.89 | 57.30 | -90.25 | 39.26 | **24** | 15744 | **2232** | 160 | **16** | **0** | 31.47 | **76.41** |
 
 ## tracking_uvy_default
 
 | Method | HOTA | DetA | AssA | MOTA | IDF1 | IDSW | FP | FN | Frag | MT | ML | Prec. | Rec. |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| YOLO11n + SORT | 33.94 | 21.39 | 56.76 | -95.38 | 38.61 | **22** | 16179 | 2284 | **164** | **16** | **0** | 30.73 | 75.86 |
-| YOLO11n + OC-SORT | **42.26** | **32.57** | **58.11** | **9.89** | **54.38** | 23 | **5464** | 3038 | 167 | 12 | 1 | **54.03** | 67.89 |
-| YOLO11n + ByteTrack (proposed) | 34.20 | 21.47 | 57.35 | -94.21 | 39.01 | 23 | 16068 | **2283** | **164** | **16** | **0** | 30.88 | **75.87** |
+| YOLO11n + SORT | 34.11 | 21.52 | 56.95 | -93.82 | 38.81 | **23** | 16033 | **2281** | **158** | **16** | **0** | 30.93 | **75.89** |
+| YOLO11n + OC-SORT | **41.49** | **32.45** | 56.41 | **9.46** | **53.15** | 26 | **5498** | 3042 | 163 | 12 | 1 | **53.86** | 67.85 |
+| YOLO11n + ByteTrack (proposed) | 34.15 | 21.56 | **56.95** | -93.08 | 38.90 | 24 | 15961 | 2282 | **158** | **16** | **0** | 31.02 | 75.88 |
 
 ## tracking_dev
 
@@ -90,17 +90,17 @@
 
 | Method | OWTA | DetRe | AssA | IDSW | Frag | MT | ML | FN | HOTA* | MOTA* | IDF1* | FP* |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| YOLO11n + SORT | 55.75 | 56.44 | **57.41** | 25 | **147** | **16** | 1 | 2504 | 38.50 | -31.96 | 46.85 | 9956 |
-| YOLO11n + OC-SORT | 54.49 | 57.54 | 54.22 | 44 | 193 | **16** | **0** | 2366 | 33.46 | -85.50 | 38.05 | 15140 |
-| YOLO11n + ByteTrack (proposed) | **56.80** | **58.67** | 57.34 | **23** | 165 | **16** | **0** | **2243** | 34.31 | -93.25 | 39.06 | 16017 |
+| YOLO11n + SORT | 56.07 | 56.37 | **58.20** | 26 | **144** | **16** | 1 | 2524 | 38.47 | -35.07 | 46.35 | 10229 |
+| YOLO11n + OC-SORT | 54.34 | 57.56 | 53.91 | 47 | 185 | **16** | **0** | 2363 | 33.39 | -85.03 | 38.14 | 15096 |
+| YOLO11n + ByteTrack (proposed) | **56.84** | **58.75** | 57.30 | **24** | 160 | **16** | **0** | **2232** | 34.52 | -90.25 | 39.26 | 15744 |
 
 ## tracking_uvy_partial_default
 
 | Method | OWTA | DetRe | AssA | IDSW | Frag | MT | ML | FN | HOTA* | MOTA* | IDF1* | FP* |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| YOLO11n + SORT | 56.35 | **58.37** | 56.76 | **22** | **164** | **16** | **0** | 2284 | 33.94 | -95.38 | 38.61 | 16179 |
-| YOLO11n + OC-SORT | 53.86 | 52.09 | **58.11** | 23 | 167 | 12 | 1 | 3038 | 42.26 | 9.89 | 54.38 | 5464 |
-| YOLO11n + ByteTrack (proposed) | **56.66** | 58.35 | 57.35 | 23 | **164** | **16** | **0** | **2283** | 34.20 | -94.21 | 39.01 | 16068 |
+| YOLO11n + SORT | **56.47** | **58.39** | 56.95 | **23** | **158** | **16** | **0** | **2281** | 34.11 | -93.82 | 38.81 | 16033 |
+| YOLO11n + OC-SORT | 52.96 | 52.03 | 56.41 | 26 | 163 | 12 | 1 | 3042 | 41.49 | 9.46 | 53.15 | 5498 |
+| YOLO11n + ByteTrack (proposed) | 56.46 | 58.37 | **56.95** | 24 | **158** | **16** | **0** | 2282 | 34.15 | -93.08 | 38.90 | 15961 |
 
 ## tracking_per_sequence
 
@@ -118,15 +118,15 @@
 | SportsMOT | `v_i2_L4qquVg0_c007` | test | SORT | 67.19 | 71.95 | 74.02 | 61.07 | 83.35 | 72.76 | 29 | 49 | 525 | 250 | 21 | 47 |
 | SportsMOT | `v_i2_L4qquVg0_c007` | test | OC-SORT | 67.26 | 72.28 | 73.75 | 61.42 | 82.44 | 73.68 | 42 | 71 | 567 | 239 | 21 | 57 |
 | SportsMOT | `v_i2_L4qquVg0_c007` | test | ByteTrack (proposed) | 66.41 | 71.27 | 73.89 | 59.75 | 83.74 | 72.24 | 23 | 46 | 538 | 224 | 21 | 38 |
-| UVY-Track | `soccer_V04` | test | SORT | 53.06 | 67.45 | 45.50 | 63.48 | 31.05 | 64.95 | 19 | 60 | 1905 | 416 | 19 | 31 |
-| UVY-Track | `soccer_V04` | test | OC-SORT | 50.15 | 67.25 | 40.69 | 63.42 | 12.79 | 58.92 | 21 | 59 | 2512 | 427 | 19 | 52 |
-| UVY-Track | `soccer_V04` | test | ByteTrack (proposed) | 51.51 | 68.70 | 41.46 | 65.51 | 14.50 | 61.83 | 16 | 58 | 2471 | 415 | 19 | 32 |
-| UVY-Track | `soccer_V01` | test | SORT | 18.86 | 29.50 | 14.08 | 25.31 | -100.42 | 24.03 | 5 | 34 | 4481 | 1661 | 6 | 38 |
-| UVY-Track | `soccer_V01` | test | OC-SORT | 16.73 | 30.69 | 11.41 | 24.57 | -186.79 | 19.48 | 9 | 79 | 7286 | 1501 | 6 | 180 |
-| UVY-Track | `soccer_V01` | test | ByteTrack (proposed) | 17.28 | 32.11 | 11.81 | 25.32 | -192.44 | 20.07 | 6 | 52 | 7557 | 1406 | 6 | 63 |
-| UVY-Track | `soccer_V03` | test | SORT | 38.42 | 56.79 | 27.71 | 53.30 | -33.27 | 52.80 | 1 | 53 | 3570 | 427 | 5 | 25 |
-| UVY-Track | `soccer_V03` | test | OC-SORT | 31.73 | 52.92 | 21.71 | 46.47 | -93.13 | 41.38 | 14 | 55 | 5342 | 438 | 5 | 136 |
-| UVY-Track | `soccer_V03` | test | ByteTrack (proposed) | 32.90 | 56.91 | 20.27 | 53.41 | -113.73 | 41.83 | 1 | 55 | 5989 | 422 | 5 | 40 |
+| UVY-Track | `soccer_V04` | test | SORT | 53.70 | 68.25 | 45.69 | 64.72 | 30.55 | 65.09 | 19 | 61 | 1920 | 418 | 19 | 31 |
+| UVY-Track | `soccer_V04` | test | OC-SORT | 49.93 | 66.90 | 40.80 | 62.74 | 13.02 | 59.06 | 24 | 58 | 2503 | 425 | 19 | 47 |
+| UVY-Track | `soccer_V04` | test | ByteTrack (proposed) | 51.52 | 68.73 | 41.48 | 65.49 | 14.41 | 61.09 | 16 | 61 | 2475 | 414 | 19 | 33 |
+| UVY-Track | `soccer_V01` | test | SORT | 18.86 | 29.26 | 14.07 | 25.32 | -97.03 | 24.00 | 5 | 30 | 4357 | 1681 | 6 | 36 |
+| UVY-Track | `soccer_V01` | test | OC-SORT | 16.68 | 30.58 | 11.40 | 24.44 | -186.60 | 19.47 | 10 | 75 | 7277 | 1503 | 6 | 182 |
+| UVY-Track | `soccer_V01` | test | ByteTrack (proposed) | 17.44 | 32.26 | 11.99 | 25.44 | -188.69 | 20.38 | 7 | 45 | 7450 | 1397 | 6 | 62 |
+| UVY-Track | `soccer_V03` | test | SORT | 37.35 | 56.82 | 26.18 | 53.31 | -45.97 | 50.72 | 2 | 53 | 3952 | 425 | 5 | 27 |
+| UVY-Track | `soccer_V03` | test | OC-SORT | 31.81 | 52.98 | 21.79 | 46.52 | -92.13 | 41.54 | 13 | 52 | 5316 | 435 | 5 | 136 |
+| UVY-Track | `soccer_V03` | test | ByteTrack (proposed) | 33.22 | 56.93 | 20.66 | 53.43 | -108.03 | 42.48 | 1 | 54 | 5819 | 421 | 5 | 41 |
 
 ## selected_params
 
@@ -141,9 +141,9 @@
 
 | Method | Tracking stage (ms / frame) | Tracking stage alone (FPS) |
 |---|---|---|
-| YOLO11n + SORT | 2.43 | 411.80 |
-| YOLO11n + OC-SORT | 6.79 | 147.30 |
-| YOLO11n + ByteTrack (proposed) | 2.99 | 334.40 |
+| YOLO11n + SORT | 0.32 | 3123.50 |
+| YOLO11n + OC-SORT | 0.88 | 1132.70 |
+| YOLO11n + ByteTrack (proposed) | 0.41 | 2434.10 |
 
 ## player_detection
 
@@ -151,112 +151,132 @@
 |---|---|---|---|---|---|---|---|---|---|
 | SportsMOT | dev | 1 | 5911 | 484 | 711 | 92.43 | 89.26 | 90.82 | 90.09 |
 | SportsMOT | test | 3 | 15079 | 3459 | 1281 | 81.34 | 92.17 | 86.42 | 88.93 |
-| UVY-Track | test | 3 | 6689 | 6803 | 2772 | 49.58 | 70.70 | 58.28 | 57.33 |
+| UVY-Track | test | 3 | 6696 | 6816 | 2765 | 49.56 | 70.77 | 58.29 | 57.36 |
 
 ## ball_summary
 
 | Data | Method | Visible-ball frames | P (dist) | R (dist) | F1 (dist) | P (IoU) | R (IoU) | F1 (IoU) | AP@0.5 | Coverage | Centre error of correct outputs (px) |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | InFactory | Detection only (YOLO11n) | 884 | 74.51 | 34.39 | 47.06 | 66.91 | 30.88 | 42.26 | 25.95 | 28.14 | 2.11 |
-| InFactory | Kalman tracker, detected positions only | 884 | 85.13 | 30.43 | 44.83 | 74.68 | 26.70 | 39.33 | n/a | 21.79 | 3.29 |
-| InFactory | Kalman tracker: detected + predicted (proposed) | 884 | 62.24 | 43.44 | 51.17 | 46.19 | 32.24 | 37.98 | n/a | 42.55 | 4.59 |
-| UVY-Track | Detection only (YOLO11n) | 1518 | 62.43 | 34.59 | 44.51 | 25.45 | 14.10 | 18.14 | 12.02 | 53.60 | 1.99 |
-| UVY-Track | Kalman tracker, detected positions only | 1518 | 61.11 | 28.99 | 39.32 | 30.42 | 14.43 | 19.57 | n/a | 45.89 | 2.00 |
-| UVY-Track | Kalman tracker: detected + predicted (proposed) | 1518 | 54.85 | 43.22 | 48.34 | 19.48 | 15.35 | 17.17 | n/a | 76.23 | 3.15 |
-| All ball sequences | Detection only (YOLO11n) | 2402 | 66.37 | 34.51 | 45.41 | 38.99 | 20.27 | 26.68 | 16.29 | 41.37 | 2.03 |
-| All ball sequences | Kalman tracker, detected positions only | 2402 | 68.44 | 29.52 | 41.24 | 43.92 | 18.94 | 26.47 | n/a | 34.32 | 2.49 |
-| All ball sequences | Kalman tracker: detected + predicted (proposed) | 2402 | 57.36 | 43.30 | 49.35 | 28.57 | 21.57 | 24.58 | n/a | 60.05 | 3.68 |
+| InFactory | Kalman tracker, detected positions only | 884 | 92.48 | 27.83 | 42.78 | 80.08 | 24.09 | 37.04 | n/a | 18.34 | 3.49 |
+| InFactory | Kalman tracker: detected + predicted (YOLO only) | 884 | 82.53 | 36.88 | 50.98 | 63.54 | 28.39 | 39.25 | n/a | 27.24 | 4.27 |
+| InFactory | Kalman tracker + motion flights (proposed) | 884 | 82.53 | 36.88 | 50.98 | 63.54 | 28.39 | 39.25 | n/a | 27.24 | 4.27 |
+| UVY-Track | Detection only (YOLO11n) | 1518 | 62.56 | 35.11 | 44.98 | 24.77 | 13.90 | 17.81 | 12.03 | 54.30 | 1.85 |
+| UVY-Track | Kalman tracker, detected positions only | 1518 | 67.03 | 28.13 | 39.63 | 34.22 | 14.36 | 20.23 | n/a | 40.60 | 1.51 |
+| UVY-Track | Kalman tracker: detected + predicted (YOLO only) | 1518 | 65.60 | 35.18 | 45.80 | 27.76 | 14.89 | 19.38 | n/a | 51.88 | 1.83 |
+| UVY-Track | Kalman tracker + motion flights (proposed) | 1518 | 64.17 | 36.10 | 46.21 | 28.10 | 15.81 | 20.24 | n/a | 54.43 | 1.83 |
+| All ball sequences | Detection only (YOLO11n) | 2402 | 66.43 | 34.85 | 45.71 | 38.41 | 20.15 | 26.43 | 16.31 | 41.74 | 1.94 |
+| All ball sequences | Kalman tracker, detected positions only | 2402 | 74.53 | 28.02 | 40.73 | 47.73 | 17.94 | 26.08 | n/a | 29.91 | 2.23 |
+| All ball sequences | Kalman tracker: detected + predicted (YOLO only) | 2402 | 71.13 | 35.80 | 47.63 | 39.45 | 19.86 | 26.42 | n/a | 40.05 | 2.76 |
+| All ball sequences | Kalman tracker + motion flights (proposed) | 2402 | 69.98 | 36.39 | 47.88 | 39.31 | 20.44 | 26.90 | n/a | 41.37 | 2.74 |
 
 ## ball_predicted
 
 | Data | Detected frames | Precision of detected positions (dist) | Predicted frames | Precision of predicted positions (dist) | Frames with no output |
 |---|---|---|---|---|---|
-| InFactory | 316 | 85.13 | 301 | 38.21 | 833 |
-| UVY-Track | 720 | 61.11 | 476 | 45.38 | 373 |
-| All ball sequences | 1036 | 68.44 | 777 | 42.60 | 1206 |
+| InFactory | 266 | 92.48 | 129 | 62.02 | 1055 |
+| UVY-Track | 672 | 65.62 | 182 | 58.79 | 715 |
+| All ball sequences | 938 | 73.24 | 311 | 60.13 | 1770 |
 
 ## ball_continuity
 
 | Data | Method | Frames detected | Frames predicted | Frames lost | Correct segments | Breaks | Longest segment (frames) | Mean segment (frames) | Visible frames gained vs det.-only | Visible frames lost vs det.-only | Ball ID switches |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | InFactory | Detection only (YOLO11n) | 408 | 0 | 1042 | 73 | 54 | 21 | 4.16 | n/a | n/a | n/a |
-| InFactory | Kalman tracker, detected positions only | 316 | 0 | 1134 | 61 | 45 | 21 | 4.41 | n/a | n/a | n/a |
-| InFactory | Kalman tracker: detected + predicted (proposed) | 316 | 301 | 833 | 36 | 17 | 48 | 10.67 | 122 | 42 | n/a |
-| UVY-Track | Detection only (YOLO11n) | 841 | 0 | 728 | 95 | 91 | 125 | 5.53 | n/a | n/a | n/a |
-| UVY-Track | Kalman tracker, detected positions only | 720 | 0 | 849 | 62 | 58 | 124 | 7.10 | n/a | n/a | 3 |
-| UVY-Track | Kalman tracker: detected + predicted (proposed) | 720 | 476 | 373 | 11 | 7 | 124 | 59.64 | 231 | 100 | 3 |
-| All ball sequences | Detection only (YOLO11n) | 1249 | 0 | 1770 | 168 | 145 | 125 | 4.93 | n/a | n/a | n/a |
-| All ball sequences | Kalman tracker, detected positions only | 1036 | 0 | 1983 | 123 | 103 | 124 | 5.76 | n/a | n/a | 3 |
-| All ball sequences | Kalman tracker: detected + predicted (proposed) | 1036 | 777 | 1206 | 47 | 24 | 124 | 22.13 | 353 | 142 | 3 |
+| InFactory | Kalman tracker, detected positions only | 266 | 0 | 1184 | 50 | 40 | 21 | 4.92 | n/a | n/a | n/a |
+| InFactory | Kalman tracker: detected + predicted (YOLO only) | 266 | 129 | 1055 | 33 | 20 | 43 | 9.88 | 88 | 66 | n/a |
+| InFactory | Kalman tracker + motion flights (proposed) | 266 | 129 | 1055 | 33 | 20 | 43 | 9.88 | 88 | 66 | n/a |
+| UVY-Track | Detection only (YOLO11n) | 852 | 0 | 717 | 102 | 98 | 125 | 5.22 | n/a | n/a | n/a |
+| UVY-Track | Kalman tracker, detected positions only | 637 | 0 | 932 | 43 | 39 | 124 | 9.93 | n/a | n/a | 4 |
+| UVY-Track | Kalman tracker: detected + predicted (YOLO only) | 637 | 177 | 755 | 10 | 6 | 128 | 53.40 | 147 | 146 | 4 |
+| UVY-Track | Kalman tracker + motion flights (proposed) | 672 | 182 | 715 | 11 | 6 | 128 | 49.82 | 161 | 146 | 4 |
+| All ball sequences | Detection only (YOLO11n) | 1260 | 0 | 1759 | 175 | 152 | 125 | 4.78 | n/a | n/a | n/a |
+| All ball sequences | Kalman tracker, detected positions only | 903 | 0 | 2116 | 93 | 79 | 124 | 7.24 | n/a | n/a | 4 |
+| All ball sequences | Kalman tracker: detected + predicted (YOLO only) | 903 | 306 | 1810 | 43 | 26 | 128 | 20.00 | 235 | 212 | 4 |
+| All ball sequences | Kalman tracker + motion flights (proposed) | 938 | 311 | 1770 | 44 | 26 | 128 | 19.86 | 249 | 212 | 4 |
 
 ## ball_per_sequence
 
 | Dataset | Sequence | Method | Frames | Visible-ball frames | P (dist) | R (dist) | F1 (dist) | Predicted frames | Precision of predicted frames | Centre error (px) |
 |---|---|---|---|---|---|---|---|---|---|---|
-| UVY-Track | `soccer_V04` | Detection only (YOLO11n) | 219 | 168 | 87.01 | 91.67 | 89.28 | 0 | n/a | 25.10 |
-| UVY-Track | `soccer_V04` | Kalman tracker: detected + predicted (proposed) | 219 | 168 | 76.88 | 91.07 | 83.38 | 40 | 0.00 | 27.78 |
-| UVY-Track | `soccer_V01` | Detection only (YOLO11n) | 750 | 750 | 37.02 | 20.53 | 26.41 | 0 | n/a | 184.90 |
-| UVY-Track | `soccer_V01` | Kalman tracker: detected + predicted (proposed) | 750 | 750 | 26.06 | 17.20 | 20.72 | 145 | 24.83 | 212.54 |
-| UVY-Track | `soccer_V03` | Detection only (YOLO11n) | 600 | 600 | 87.50 | 36.17 | 51.18 | 0 | n/a | 21.67 |
-| UVY-Track | `soccer_V03` | Kalman tracker: detected + predicted (proposed) | 600 | 600 | 74.50 | 62.33 | 67.88 | 291 | 61.86 | 46.52 |
+| UVY-Track | `soccer_V04` | Detection only (YOLO11n) | 219 | 168 | 85.56 | 91.67 | 88.51 | 0 | n/a | 27.04 |
+| UVY-Track | `soccer_V04` | Kalman tracker: detected + predicted (YOLO only) | 219 | 168 | 97.45 | 91.07 | 94.15 | 2 | 0.00 | 0.92 |
+| UVY-Track | `soccer_V04` | Kalman tracker + motion flights (proposed) | 219 | 168 | 84.77 | 99.41 | 91.51 | 7 | 0.00 | 0.98 |
+| UVY-Track | `soccer_V01` | Detection only (YOLO11n) | 750 | 750 | 38.04 | 21.20 | 27.23 | 0 | n/a | 181.87 |
+| UVY-Track | `soccer_V01` | Kalman tracker: detected + predicted (YOLO only) | 750 | 750 | 42.50 | 24.93 | 31.43 | 107 | 48.60 | 167.21 |
+| UVY-Track | `soccer_V01` | Kalman tracker + motion flights (proposed) | 750 | 750 | 42.50 | 24.93 | 31.43 | 107 | 48.60 | 167.21 |
+| UVY-Track | `soccer_V03` | Detection only (YOLO11n) | 600 | 600 | 86.61 | 36.67 | 51.52 | 0 | n/a | 24.30 |
+| UVY-Track | `soccer_V03` | Kalman tracker: detected + predicted (YOLO only) | 600 | 600 | 89.40 | 32.33 | 47.49 | 68 | 80.88 | 10.08 |
+| UVY-Track | `soccer_V03` | Kalman tracker + motion flights (proposed) | 600 | 600 | 89.40 | 32.33 | 47.49 | 68 | 80.88 | 10.08 |
 | InFactory | `032ca2db` | Detection only (YOLO11n) | 85 | 85 | 61.82 | 40.00 | 48.57 | 0 | n/a | 234.94 |
-| InFactory | `032ca2db` | Kalman tracker: detected + predicted (proposed) | 85 | 85 | 43.04 | 40.00 | 41.46 | 43 | 20.93 | 172.75 |
+| InFactory | `032ca2db` | Kalman tracker: detected + predicted (YOLO only) | 85 | 85 | 73.68 | 32.94 | 45.53 | 14 | 50.00 | 36.40 |
+| InFactory | `032ca2db` | Kalman tracker + motion flights (proposed) | 85 | 85 | 73.68 | 32.94 | 45.53 | 14 | 50.00 | 36.40 |
 | InFactory | `0f8fc039` | Detection only (YOLO11n) | 243 | 26 | 0.00 | 0.00 | 0.00 | 0 | n/a | 289.70 |
-| InFactory | `0f8fc039` | Kalman tracker: detected + predicted (proposed) | 243 | 26 | 0.00 | 0.00 | 0.00 | 15 | 0.00 | 290.71 |
+| InFactory | `0f8fc039` | Kalman tracker: detected + predicted (YOLO only) | 243 | 26 | 0.00 | 0.00 | 0.00 | 6 | 0.00 | 290.07 |
+| InFactory | `0f8fc039` | Kalman tracker + motion flights (proposed) | 243 | 26 | 0.00 | 0.00 | 0.00 | 6 | 0.00 | 290.07 |
 | InFactory | `2e3b6c35` | Detection only (YOLO11n) | 588 | 321 | 96.00 | 29.91 | 45.61 | 0 | n/a | 6.09 |
-| InFactory | `2e3b6c35` | Kalman tracker: detected + predicted (proposed) | 588 | 321 | 73.58 | 48.60 | 58.54 | 117 | 54.70 | 6.04 |
+| InFactory | `2e3b6c35` | Kalman tracker: detected + predicted (YOLO only) | 588 | 321 | 92.74 | 35.83 | 51.69 | 51 | 82.35 | 4.88 |
+| InFactory | `2e3b6c35` | Kalman tracker + motion flights (proposed) | 588 | 321 | 92.74 | 35.83 | 51.69 | 51 | 82.35 | 4.88 |
 | InFactory | `3f96530a` | Detection only (YOLO11n) | 84 | 84 | 100.00 | 1.19 | 2.35 | 0 | n/a | 0.86 |
-| InFactory | `3f96530a` | Kalman tracker: detected + predicted (proposed) | 84 | 84 | 0.00 | 0.00 | 0.00 | 0 | n/a | n/a |
+| InFactory | `3f96530a` | Kalman tracker: detected + predicted (YOLO only) | 84 | 84 | 0.00 | 0.00 | 0.00 | 0 | n/a | n/a |
+| InFactory | `3f96530a` | Kalman tracker + motion flights (proposed) | 84 | 84 | 0.00 | 0.00 | 0.00 | 0 | n/a | n/a |
 | InFactory | `5c2081b3` | Detection only (YOLO11n) | 105 | 105 | 100.00 | 87.62 | 93.40 | 0 | n/a | 2.59 |
-| InFactory | `5c2081b3` | Kalman tracker: detected + predicted (proposed) | 105 | 105 | 96.84 | 87.62 | 92.00 | 14 | 78.57 | 17.63 |
+| InFactory | `5c2081b3` | Kalman tracker: detected + predicted (YOLO only) | 105 | 105 | 97.75 | 82.86 | 89.69 | 8 | 75.00 | 15.96 |
+| InFactory | `5c2081b3` | Kalman tracker + motion flights (proposed) | 105 | 105 | 97.75 | 82.86 | 89.69 | 8 | 75.00 | 15.96 |
 | InFactory | `71125020` | Detection only (YOLO11n) | 35 | 35 | 59.09 | 37.14 | 45.61 | 0 | n/a | 81.23 |
-| InFactory | `71125020` | Kalman tracker: detected + predicted (proposed) | 35 | 35 | 79.41 | 77.14 | 78.26 | 19 | 73.68 | 26.14 |
+| InFactory | `71125020` | Kalman tracker: detected + predicted (YOLO only) | 35 | 35 | 92.31 | 68.57 | 78.69 | 11 | 100.00 | 10.25 |
+| InFactory | `71125020` | Kalman tracker + motion flights (proposed) | 35 | 35 | 92.31 | 68.57 | 78.69 | 11 | 100.00 | 10.25 |
 | InFactory | `7d503a7a` | Detection only (YOLO11n) | 80 | 80 | 32.14 | 11.25 | 16.67 | 0 | n/a | 418.00 |
-| InFactory | `7d503a7a` | Kalman tracker: detected + predicted (proposed) | 80 | 80 | 3.85 | 2.50 | 3.03 | 40 | 0.00 | 687.27 |
+| InFactory | `7d503a7a` | Kalman tracker: detected + predicted (YOLO only) | 80 | 80 | 9.68 | 3.75 | 5.41 | 19 | 0.00 | 638.82 |
+| InFactory | `7d503a7a` | Kalman tracker + motion flights (proposed) | 80 | 80 | 9.68 | 3.75 | 5.41 | 19 | 0.00 | 638.82 |
 | InFactory | `81926caa` | Detection only (YOLO11n) | 40 | 19 | 0.00 | 0.00 | 0.00 | 0 | n/a | 888.01 |
-| InFactory | `81926caa` | Kalman tracker: detected + predicted (proposed) | 40 | 19 | 0.00 | 0.00 | 0.00 | 14 | 0.00 | 1123.45 |
+| InFactory | `81926caa` | Kalman tracker: detected + predicted (YOLO only) | 40 | 19 | 0.00 | 0.00 | 0.00 | 0 | n/a | 591.56 |
+| InFactory | `81926caa` | Kalman tracker + motion flights (proposed) | 40 | 19 | 0.00 | 0.00 | 0.00 | 0 | n/a | 591.56 |
 | InFactory | `b0558318` | Detection only (YOLO11n) | 160 | 128 | 75.64 | 46.09 | 57.28 | 0 | n/a | 100.89 |
-| InFactory | `b0558318` | Kalman tracker: detected + predicted (proposed) | 160 | 128 | 75.26 | 57.03 | 64.89 | 39 | 43.59 | 43.09 |
+| InFactory | `b0558318` | Kalman tracker: detected + predicted (YOLO only) | 160 | 128 | 92.00 | 53.91 | 67.98 | 20 | 70.00 | 26.35 |
+| InFactory | `b0558318` | Kalman tracker + motion flights (proposed) | 160 | 128 | 92.00 | 53.91 | 67.98 | 20 | 70.00 | 26.35 |
 | InFactory | `bd8d9aab` | Detection only (YOLO11n) | 30 | 1 | 0.00 | 0.00 | 0.00 | 0 | n/a | n/a |
-| InFactory | `bd8d9aab` | Kalman tracker: detected + predicted (proposed) | 30 | 1 | 0.00 | 0.00 | 0.00 | 0 | n/a | n/a |
+| InFactory | `bd8d9aab` | Kalman tracker: detected + predicted (YOLO only) | 30 | 1 | 0.00 | 0.00 | 0.00 | 0 | n/a | n/a |
+| InFactory | `bd8d9aab` | Kalman tracker + motion flights (proposed) | 30 | 1 | 0.00 | 0.00 | 0.00 | 0 | n/a | n/a |
 
 ## runtime_stages
 
 | Stage | Median (ms / frame) | Mean (ms / frame) | 95th percentile (ms) | Share of proposed pipeline |
 |---|---|---|---|---|
-| frame reading (JPEG decode) | 11.25 | 11.25 | 14.11 | 3.4% |
-| detection | 287.25 | 293.01 | 366.83 | 86.9% |
-| player filter + SORT | 3.52 | 3.53 | 4.77 | n/a (baseline) |
-| player filter + OC-SORT | 9.80 | 10.59 | 16.66 | n/a (baseline) |
-| player filter + ByteTrack (proposed) | 5.58 | 5.87 | 8.16 | 1.7% |
-| ball filter + Kalman tracker | 0.30 | 0.29 | 0.65 | 0.1% |
-| drawing annotations | 8.70 | 8.99 | 13.32 | 2.6% |
-| video encoding (mp4v) | 17.39 | 18.59 | 26.62 | 5.3% |
+| frame reading (JPEG decode) | 4.32 | 4.41 | 5.13 | 2.5% |
+| detection | 112.63 | 113.08 | 119.72 | 64.0% |
+| player filter + SORT | 0.61 | 0.60 | 0.71 | n/a (baseline) |
+| player filter + OC-SORT | 1.59 | 1.67 | 2.70 | n/a (baseline) |
+| player filter + ByteTrack (proposed) | 0.71 | 0.70 | 0.84 | 0.4% |
+| ball motion: camera compensation + flight linking | 52.83 | 54.05 | 62.38 | 30.0% |
+| ball filter + Kalman tracker | 0.03 | 0.05 | 0.27 | 0.0% |
+| drawing annotations | 1.11 | 1.11 | 1.47 | 0.6% |
+| video encoding (mp4v) | 4.45 | 4.54 | 5.22 | 2.5% |
 
 ## runtime_pipeline
 
 | Full pipeline with | Total time (ms / frame) | Throughput (FPS) |
 |---|---|---|
-| YOLO11n + SORT | 328.40 | 3.04 |
-| YOLO11n + OC-SORT | 334.69 | 2.99 |
-| YOLO11n + ByteTrack (proposed) | 330.46 | 3.03 |
+| YOLO11n + SORT | 175.98 | 5.68 |
+| YOLO11n + OC-SORT | 176.95 | 5.65 |
+| YOLO11n + ByteTrack (proposed) | 176.07 | 5.68 |
 
 ## system
 
 | Item | Value |
 |---|---|
-| CPU | Intel(R) Core(TM) 7 150U |
-| Cores (physical / logical) | 10 / 12 |
-| RAM | 15.7 GB |
+| CPU | Apple M1 |
+| Cores (physical / logical) | 8 / 8 |
+| RAM | 8.0 GB |
 | GPU | none (CUDA not available) |
 | Inference device | cpu |
 | Power source during the benchmark | AC power |
-| Operating system | Windows-10-10.0.26200-SP0 (Windows 11) |
-| Python | 3.11.9 |
-| PyTorch | 2.14.1+cpu (8 threads) |
-| Ultralytics | 8.4.182 |
+| Operating system | macOS-26.5.2-arm64-arm-64bit-Mach-O |
+| Python | 3.14.6 |
+| PyTorch | 2.15.0 (7 threads) |
+| Ultralytics | 8.4.198 |
 | Roboflow trackers | 2.6.1 |
-| supervision | 0.31.0 |
+| supervision | 0.31.3 |
 | OpenCV | 5.0.0 |
 | Benchmark sequence | SportsMOT/v_dw7LOz17Omg_c067, 150 frames, 1280x720 |
 
@@ -264,7 +284,7 @@
 
 | Model | Target | Dataset | Frames | Precision | Recall | F1 | AP@0.5 | Detector (ms / frame) |
 |---|---|---|---|---|---|---|---|---|
-| YOLOv8n | player | SportsMOT | 200 | 60.94 | 87.09 | 71.70 | 71.73 | 423.67 |
-| YOLOv8n | ball | InFactory | 265 | 82.98 | 66.95 | 74.11 | 50.98 | 423.67 |
-| YOLO11n | player | SportsMOT | 200 | 74.47 | 89.22 | 81.18 | 79.00 | 360.02 |
-| YOLO11n | ball | InFactory | 265 | 88.82 | 64.81 | 74.94 | 51.24 | 360.02 |
+| YOLOv8n | player | SportsMOT | 200 | 60.94 | 87.09 | 71.70 | 71.73 | 112.18 |
+| YOLOv8n | ball | InFactory | 265 | 82.98 | 66.95 | 74.11 | 50.98 | 112.18 |
+| YOLO11n | player | SportsMOT | 200 | 74.47 | 89.22 | 81.18 | 79.00 | 106.22 |
+| YOLO11n | ball | InFactory | 265 | 88.82 | 64.81 | 74.94 | 51.24 | 106.22 |

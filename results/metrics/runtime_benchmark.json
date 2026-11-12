@@ -5,26 +5,26 @@
   "resolution": "1280x720",
   "detector": "yolo11n_1280",
   "system": {
-    "timestamp": "2026-11-12T00:29:56",
-    "platform": "Windows-10-10.0.26200-SP0",
-    "cpu": "Intel(R) Core(TM) 7 150U",
-    "cpu_logical_cores": 12,
-    "python": "3.11.9",
+    "timestamp": "2026-11-12T10:23:03",
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "cpu": "Apple M1",
+    "cpu_logical_cores": 8,
+    "python": "3.14.6",
     "device": "cpu",
-    "cpu_physical_cores": 10,
-    "ram_gb": 15.7,
+    "cpu_physical_cores": 8,
+    "ram_gb": 8.0,
     "power_source": "AC power",
-    "cpu_mhz_current": 1800,
-    "torch": "2.14.1+cpu",
-    "torch_threads": 8,
+    "cpu_mhz_current": 3204,
+    "torch": "2.15.0",
+    "torch_threads": 7,
     "cuda_available": false,
     "gpu": null,
-    "ultralytics": "8.4.182",
-    "trackers": null,
-    "supervision": "0.31.0",
+    "ultralytics": "8.4.198",
+    "trackers": "2.6.1",
+    "supervision": "0.31.3",
     "cv2": "5.0.0",
-    "numpy": "2.4.6",
-    "git_commit": "c60899c"
+    "numpy": "2.5.4",
+    "git_commit": "494d9b3"
   },
   "tracker_params": {
     "sort": {
@@ -51,54 +51,59 @@
   },
   "stages": {
     "frame reading (JPEG decode)": {
-      "mean_ms": 11.2528,
-      "median_ms": 11.2521,
-      "p95_ms": 14.1089
+      "mean_ms": 4.4106,
+      "median_ms": 4.3177,
+      "p95_ms": 5.1277
     },
     "detection": {
-      "mean_ms": 293.014,
-      "median_ms": 287.2483,
-      "p95_ms": 366.834
+      "mean_ms": 113.0788,
+      "median_ms": 112.6311,
+      "p95_ms": 119.7174
     },
     "player filter + SORT": {
-      "mean_ms": 3.5262,
-      "median_ms": 3.5204,
-      "p95_ms": 4.7747
+      "mean_ms": 0.6044,
+      "median_ms": 0.6116,
+      "p95_ms": 0.7095
     },
     "player filter + OC-SORT": {
-      "mean_ms": 10.5924,
-      "median_ms": 9.8,
-      "p95_ms": 16.665
+      "mean_ms": 1.6707,
+      "median_ms": 1.587,
+      "p95_ms": 2.6958
     },
     "player filter + ByteTrack (proposed)": {
-      "mean_ms": 5.8745,
-      "median_ms": 5.5799,
-      "p95_ms": 8.1577
+      "mean_ms": 0.6993,
+      "median_ms": 0.7055,
+      "p95_ms": 0.8443
+    },
+    "ball motion: camera compensation + flight linking": {
+      "mean_ms": 54.0537,
+      "median_ms": 52.8275,
+      "p95_ms": 62.3791
     },
     "ball filter + Kalman tracker": {
-      "mean_ms": 0.2911,
-      "median_ms": 0.2983,
-      "p95_ms": 0.651
+      "mean_ms": 0.05,
+      "median_ms": 0.0279,
+      "p95_ms": 0.2745
     },
     "drawing annotations": {
-      "mean_ms": 8.9872,
-      "median_ms": 8.6955,
-      "p95_ms": 13.3157
+      "mean_ms": 1.1084,
+      "median_ms": 1.1128,
+      "p95_ms": 1.4696
     },
     "video encoding (mp4v)": {
-      "mean_ms": 18.5915,
-      "median_ms": 17.3908,
-      "p95_ms": 26.6181
+      "mean_ms": 4.5352,
+      "median_ms": 4.4485,
+      "p95_ms": 5.2188
     }
   },
   "full_pipeline_ms_per_frame": {
-    "sort": 328.405,
-    "ocsort": 334.685,
-    "bytetrack": 330.465
+    "sort": 175.977,
+    "ocsort": 176.952,
+    "bytetrack": 176.071
   },
   "full_pipeline_fps": {
-    "sort": 3.045,
-    "ocsort": 2.988,
-    "bytetrack": 3.026
+    "sort": 5.683,
+    "ocsort": 5.651,
+    "bytetrack": 5.68
   }
 }
