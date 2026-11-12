@@ -1,0 +1,129 @@
+\relax 
+\citation{sort}
+\citation{kalman}
+\citation{bytetrack}
+\citation{ocsort}
+\providecommand \oddpage@label [2]{}
+\@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}{}\protected@file@percent }
+\citation{sportsmot}
+\citation{uvy}
+\citation{infactory}
+\citation{yu2006}
+\citation{singh2024proctor}
+\citation{nair2023attentive}
+\citation{gopikiran2025driving}
+\citation{kumar2023pedestrian}
+\citation{peri2023animals}
+\citation{aarthi2016moving}
+\citation{coco}
+\citation{yolo11}
+\citation{clear}
+\citation{idf1}
+\citation{hota}
+\citation{owta}
+\@writefile{toc}{\contentsline {section}{\numberline {II}Related Work}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {III}Problem Statement, Research Gap and Objectives}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {IV}Proposed System}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-A}}Overview}{2}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-B}}Detection and Filtering}{2}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Architecture of the proposed system. One YOLO11n pass per frame serves players and ball; ByteTrack tracks the players and a Kalman filter, extended with motion-based flights, tracks the ball. For the baselines only the player-tracker block is replaced by SORT or OC-SORT.}}{3}{}\protected@file@percent }
+\newlabel{fig:architecture}{{1}{3}{}{figure.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-C}}Player Tracking}{3}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-D}}Ball Tracking}{3}{}\protected@file@percent }
+\newlabel{eq:kalman}{{1}{3}{}{equation.1}{}}
+\newlabel{eq:matrices}{{2}{3}{}{equation.2}{}}
+\newlabel{eq:gate}{{3}{3}{}{equation.3}{}}
+\newlabel{eq:score}{{4}{3}{}{equation.4}{}}
+\citation{sportsmot}
+\citation{uvy}
+\citation{infactory}
+\citation{hota}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {IV-E}}Ball in Flight: Motion Flights}{4}{}\protected@file@percent }
+\newlabel{eq:launch}{{5}{4}{}{equation.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Datasets}{4}{}\protected@file@percent }
+\newlabel{sec:datasets}{{V}{4}{}{section.5}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VI}Experimental Setup}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-A}}Baselines and Fairness Protocol}{4}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-B}}Metrics}{4}{}\protected@file@percent }
+\citation{clear}
+\citation{idf1}
+\citation{owta}
+\@writefile{lot}{\contentsline {table}{\numberline {I}{\ignorespaces Datasets and How They Are Used}}{5}{}\protected@file@percent }
+\newlabel{tab:datasets}{{I}{5}{}{table.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {II}{\ignorespaces Evaluated Sequences}}{5}{}\protected@file@percent }
+\newlabel{tab:sequences}{{II}{5}{}{table.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {III}{\ignorespaces Tracker Parameters (n/a: Parameter Not Used by the Tracker)}}{5}{}\protected@file@percent }
+\newlabel{tab:params}{{III}{5}{}{table.3}{}}
+\newlabel{eq:hota}{{6}{5}{}{equation.6}{}}
+\newlabel{eq:mota}{{7}{5}{}{equation.7}{}}
+\newlabel{eq:idf1}{{8}{5}{}{equation.8}{}}
+\newlabel{eq:owta}{{9}{5}{}{equation.9}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VI-C}}Implementation and Hardware}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {VII}Results}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-A}}Player Detection}{5}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-B}}Player Tracking on SportsMOT}{5}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Tracking accuracy of the three trackers with tuned parameters. Left: HOTA, MOTA and IDF1 on SportsMOT. Right: OWTA, AssA and detection recall on the partially labelled UVY-Track.}}{6}{}\protected@file@percent }
+\newlabel{fig:tracking}{{2}{6}{}{figure.2}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IV}{\ignorespaces Player Detection with YOLO11n (Confidence $\geq 0.5$, IoU $\geq 0.5$)}}{6}{}\protected@file@percent }
+\newlabel{tab:detection}{{IV}{6}{}{table.4}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Identity switches and track fragmentations on the test sequences of both datasets (lower is better).}}{6}{}\protected@file@percent }
+\newlabel{fig:idsw}{{3}{6}{}{figure.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {V}{\ignorespaces Player Tracking on the SportsMOT Test Sequences with Identical YOLO11n Detections. Best Value per Column and Parameter Set in Bold (Lower Is Better for IDSW, FP, FN and Frag)}}{7}{}\protected@file@percent }
+\newlabel{tab:sportsmot}{{V}{7}{}{table.5}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces HOTA on the dev sequence for the 48 grid points of each tracker. Star: selected setting. Circle: shared default setting.}}{7}{}\protected@file@percent }
+\newlabel{fig:tuning}{{4}{7}{}{figure.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {VI}{\ignorespaces Player Tracking on the UVY-Track Test Sequences (1,569 Frames, Tuned Parameters). Only Metrics That Do Not Count False Positives Are Shown}}{7}{}\protected@file@percent }
+\newlabel{tab:uvy}{{VI}{7}{}{table.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-C}}Player Tracking on UVY-Track}{7}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-D}}Ball Detection and Tracking}{7}{}\protected@file@percent }
+\newlabel{sec:ballresults}{{\mbox  {VII-D}}{7}{}{subsection.7.4}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {VII}{\ignorespaces Ball Results: Detection Only Versus the Kalman Ball Tracker With and Without Motion Flights on Identical Candidates. AP@0.5 Is Computed over All Detector Candidates. Coverage Is the Share of Labelled Frames with an Output. Frames: Detected, Predicted, No Output. Segments: Number and Mean Length in Frames}}{8}{}\protected@file@percent }
+\newlabel{tab:ball}{{VII}{8}{}{table.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Precision, recall and F1. Left: player detection. Centre and right: the ball on UVY-Track and on InFactory: detection only, the Kalman tracker on detector candidates alone, and the proposed tracker with motion flights (distance criterion).}}{8}{}\protected@file@percent }
+\newlabel{fig:prf}{{5}{8}{}{figure.5}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {VIII}{\ignorespaces Proposed Ball Tracker: Precision of Detected and of Predicted Positions (Distance Criterion)}}{8}{}\protected@file@percent }
+\newlabel{tab:ballpred}{{VIII}{8}{}{table.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-E}}Detector Comparison}{8}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Ball trajectory of the proposed tracker on the free kick of \texttt  {soccer\_V04} with ground truth. Dots: detected, by the detector or by a motion flight. Triangles: predicted by the Kalman filter. Marks on the time axis: frames without output. The arc is the shot, followed by a motion flight; the ground truth has a gap during the most blurred part of the flight.}}{9}{}\protected@file@percent }
+\newlabel{fig:balltraj}{{6}{9}{}{figure.6}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Ball track status per sequence with the proposed tracker. Diamonds mark the share of frames in which the ball is visible.}}{9}{}\protected@file@percent }
+\newlabel{fig:ballstatus}{{7}{9}{}{figure.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {IX}{\ignorespaces YOLOv8n Versus YOLO11n on the Same Frames}}{9}{}\protected@file@percent }
+\newlabel{tab:models}{{IX}{9}{}{table.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {X}{\ignorespaces Median Processing Time per Frame}}{9}{}\protected@file@percent }
+\newlabel{tab:runtime}{{X}{9}{}{table.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-F}}Runtime}{9}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {\mbox  {VII-G}}Qualitative Results}{9}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Runtime. Left: latency of the tracking stage alone. Centre: throughput of the full pipeline. Right: time per stage of the proposed system.}}{10}{}\protected@file@percent }
+\newlabel{fig:runtime}{{8}{10}{}{figure.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces A frame of the annotated output video: player boxes with identities and trails, the ball marker with its recent path, and the status line.}}{10}{}\protected@file@percent }
+\newlabel{fig:demo}{{9}{10}{}{figure.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {10}{\ignorespaces Player trajectories from ByteTrack over 75 frames of a SportsMOT test sequence (foot points, image coordinates). The tracks along the top are perimeter staff, who are detected and tracked but are not annotated in the benchmark.}}{10}{}\protected@file@percent }
+\newlabel{fig:trajectories}{{10}{10}{}{figure.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {VIII}Limitations}{10}{}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {11}{\ignorespaces Player-position heatmap over the same sequence (image coordinates).}}{10}{}\protected@file@percent }
+\newlabel{fig:heatmap}{{11}{10}{}{figure.11}{}}
+\bibcite{sort}{1}
+\bibcite{bytetrack}{2}
+\bibcite{ocsort}{3}
+\bibcite{yolo11}{4}
+\bibcite{coco}{5}
+\bibcite{sportsmot}{6}
+\bibcite{uvy}{7}
+\bibcite{infactory}{8}
+\bibcite{kalman}{9}
+\bibcite{hota}{10}
+\bibcite{clear}{11}
+\bibcite{idf1}{12}
+\bibcite{yu2006}{13}
+\bibcite{kumar2023pedestrian}{14}
+\bibcite{singh2024proctor}{15}
+\bibcite{nair2023attentive}{16}
+\bibcite{gopikiran2025driving}{17}
+\bibcite{peri2023animals}{18}
+\bibcite{aarthi2016moving}{19}
+\bibcite{owta}{20}
+\@writefile{toc}{\contentsline {section}{\numberline {IX}Future Work}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {X}Conclusion}{11}{}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{11}{}\protected@file@percent }
+\gdef \@abspage@last{11}
