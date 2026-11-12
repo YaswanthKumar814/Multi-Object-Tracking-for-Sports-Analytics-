@@ -135,14 +135,17 @@ def test_ball_methods_separate_detected_from_predicted(cache, scene):
     from soccer_tracker.experiments.ball import run_ball_methods
 
     outputs, candidates, ms = run_ball_methods(cache, _FakeSeq(scene), AppConfig())
-    assert set(outputs) == {"detection_only", "kalman_detected", "kalman"}
+    assert set(outputs) == {"detection_only", "kalman_detected", "kalman", "kalman_motion"}
     # the detector dropped frames 11-13: detection-only has nothing there, the Kalman tracker predicts
     for f in (11, 12, 13):
         assert f not in outputs["detection_only"] and f not in outputs["kalman_detected"]
         assert outputs["kalman"][f].status == "predicted" and outputs["kalman"][f].confidence is None
     assert outputs["kalman"][20].status == "detected"
     assert all(o.status == "detected" for o in outputs["kalman_detected"].values())
-    assert len(candidates) == scene.num_frames and ms >= 0
+    assert len(candidates) == scene.num_frames and all(v >= 0 for v in ms.values())
+    # the proposed tracker (Kalman + motion flights) covers at least what the Kalman tracker does here
+    assert outputs["kalman_motion"][20].status == "detected"
+    assert set(outputs["kalman"]) <= set(outputs["kalman_motion"])
 
 
 # --------------------------------------------------------------------------- #

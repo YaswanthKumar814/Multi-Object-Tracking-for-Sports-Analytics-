@@ -1,16 +1,24 @@
-"""Ball experiments: detection only vs the Kalman ball tracker.
+"""Ball experiments: detection only vs the Kalman ball tracker vs Kalman + motion flights.
 
-Three outputs are compared on identical cached ball candidates:
+Four outputs are compared on identical cached ball candidates:
 
 * ``detection_only``   - the most confident ball candidate of each frame, with
                          no temporal reasoning (baseline);
 * ``kalman_detected``  - positions the Kalman tracker reports from a detection
                          (ablation: shows the effect of gating / confirmation);
-* ``kalman``           - the full proposed ball tracker: detected positions plus
-                         positions *predicted* through short detection gaps.
+* ``kalman``           - the Kalman tracker on YOLO candidates only: detected
+                         positions plus positions *predicted* through short gaps
+                         (ablation: the tracker without motion flights);
+* ``kalman_motion``    - the full proposed ball tracker: the Kalman tracker plus
+                         motion-based flights (detection/motion.py,
+                         tracking/flight.py), which follow a struck,
+                         motion-blurred ball the detector misses. Needs the
+                         video frames, so it reads each sequence once more.
 
-No ball parameter is tuned on any evaluated sequence: the tracker runs with the
-project's default configuration.
+Every method runs with the project's default configuration; nothing is tuned
+per sequence. The motion-flight rules were developed while inspecting UVY-Track
+soccer_V04 (and checked on soccer_V01/V03), so for that method UVY-Track is not
+held-out data; InFactory is.
 
 Outputs (results/metrics/): ball_per_sequence.csv, ball_summary.csv, ball.json
 and one per-frame trace per sequence under results/metrics/ball_traces/.
@@ -28,7 +36,10 @@ from ..datasets import Sequence
 from ..detection.filters import filter_balls
 from ..evaluation import BallOutput, average_precision, evaluate_ball, pool
 from ..evaluation.ball import frame_match
+from ..detection.base import Detections
+from ..detection.motion import MotionBallDetector
 from ..tracking.ball_tracker import BallTracker
+from ..tracking.flight import FlightLinker
 from .common import system_info, write_csv, write_json
 from .detections import DetectionCache, get_detections
 from .manifest import Manifest
@@ -38,8 +49,10 @@ log = logging.getLogger(__name__)
 METHODS = {
     "detection_only": "Detection only (YOLO11n)",
     "kalman_detected": "Kalman tracker, detected positions only",
-    "kalman": "Kalman tracker: detected + predicted (proposed)",
+    "kalman": "Kalman tracker: detected + predicted (YOLO only)",
+    "kalman_motion": "Kalman tracker + motion flights (proposed)",
 }
+TRACKER_METHODS = ("kalman_detected", "kalman", "kalman_motion")
 RATIO_KEYS = ["precision_iou", "recall_iou", "f1_iou", "precision_dist", "recall_dist", "f1_dist", "coverage",
               "visible_coverage", "precision_detected_iou", "precision_detected_dist", "precision_predicted_iou",
               "precision_predicted_dist"]
@@ -70,7 +83,45 @@ def run_ball_methods(cache: DetectionCache, seq: Sequence, cfg: AppConfig):
             outputs["kalman"][f] = out
             if obj.status == "detected":
                 outputs["kalman_detected"][f] = out
-    return outputs, candidates, 1000.0 * elapsed / max(cache.num_frames, 1)
+    motion_out, motion_ms = run_motion_tracker(seq, cfg, candidates)
+    outputs["kalman_motion"] = motion_out
+    return outputs, candidates, {"kalman": 1000.0 * elapsed / max(cache.num_frames, 1), "kalman_motion": motion_ms}
+
+
+def run_motion_tracker(seq: Sequence, cfg: AppConfig, candidates: dict) -> tuple[dict[int, BallOutput], float]:
+    """The proposed ball tracker: Kalman + motion flights, exactly as in the pipeline.
+
+    Uses the same cached, filtered YOLO candidates as the other methods plus
+    motion candidates computed from the frames. Flight amendments are applied
+    to frames at most ``backfill_frames`` old and never over a confident
+    detection, as the pipeline does. Returns outputs and ms/frame for the
+    motion detection + linking + tracking (YOLO time excluded, as for ``kalman``).
+    """
+    shape = (seq.info.height, seq.info.width)
+    tracker = BallTracker(cfg.ball.tracker)
+    motion = MotionBallDetector(cfg.ball.motion)
+    linker = FlightLinker(cfg.ball.motion)
+    out: dict[int, BallOutput] = {}
+    elapsed = 0.0
+    n = 0
+    for f, img in seq.frames():
+        xyxy, conf = candidates.get(f, (np.zeros((0, 4)), np.zeros(0)))
+        cand = Detections(xyxy, conf, np.array(["sports ball"] * len(conf), dtype=object))
+        t0 = time.perf_counter()
+        flights = linker.update(f, motion.detect(img))
+        obj = tracker.update(f, cand, shape, flights)
+        fixes = tracker.take_amendments()
+        elapsed += time.perf_counter() - t0
+        n += 1
+        for g, fix in fixes.items():
+            old = out.get(g)
+            seen = (old is not None and old.status == "detected"
+                    and (old.confidence or 0.0) >= cfg.ball.tracker.start_confidence)
+            if f - g <= cfg.ball.motion.backfill_frames and not seen:
+                out[g] = BallOutput(fix.xyxy.astype(np.float64), fix.status, fix.confidence, fix.track_id)
+        if obj is not None:
+            out[f] = BallOutput(obj.xyxy.astype(np.float64), obj.status, obj.confidence, obj.track_id)
+    return out, 1000.0 * elapsed / max(n, 1)
 
 
 def _percent(metrics: dict) -> dict:
@@ -90,6 +141,7 @@ def _trace(seq: Sequence, gt: dict, labelled, outputs: dict, candidates: dict) -
         g = gt.get(f)
         det = outputs["detection_only"].get(f)
         trk = outputs["kalman"].get(f)
+        mot = outputs["kalman_motion"].get(f)
         row = {
             "frame": f, "labelled": labelled is None or f in labelled, "ball_visible": g is not None,
             "gt_cx": round(float((g[0, 0] + g[0, 2]) / 2), 2) if g is not None else None,
@@ -104,6 +156,10 @@ def _trace(seq: Sequence, gt: dict, labelled, outputs: dict, candidates: dict) -
             "trk_status": trk.status if trk else "lost",
             "trk_id": trk.track_id if trk else None,
             "trk_correct": bool(frame_match(g, trk)["dist"]) if trk and g is not None else (False if trk else None),
+            "mot_cx": round(float(mot.center[0]), 2) if mot else None,
+            "mot_cy": round(float(mot.center[1]), 2) if mot else None,
+            "mot_status": mot.status if mot else "lost",
+            "mot_correct": bool(frame_match(g, mot)["dist"]) if mot and g is not None else (False if mot else None),
         }
         rows.append(row)
     return rows
@@ -126,6 +182,7 @@ def run_ball_experiments(manifest: Manifest) -> None:
         labelled = seq.ball_labelled_frames()
         gt_ids = seq.ball_track_ids() if seq.has_ball_ids else None
         outputs, candidates, tracker_ms = run_ball_methods(cache, seq, cfg)
+        tracker_ms["kalman_detected"] = tracker_ms["kalman"]
 
         frames = set(range(1, seq.info.num_frames + 1)) if labelled is None else set(labelled)
         ap = average_precision(gt, candidates, frames, 0.5)["ap"]
@@ -140,7 +197,7 @@ def run_ball_experiments(manifest: Manifest) -> None:
             row = {"dataset": seq.info.dataset, "sequence": seq.info.name, "method": method, "method_label": label,
                    **_percent(m)}
             row["ap50_candidates"] = round(100.0 * ap, 3) if method == "detection_only" else None
-            row["tracker_ms_per_frame"] = round(tracker_ms, 4) if method != "detection_only" else 0.0
+            row["tracker_ms_per_frame"] = round(tracker_ms[method], 4) if method != "detection_only" else 0.0
             row["detector_ms_per_frame"] = round(cache.detector_time()["median_ms"], 2)
             per_seq.append(row)
 
@@ -148,17 +205,17 @@ def run_ball_experiments(manifest: Manifest) -> None:
         trace = _trace(seq, gt, labelled, outputs, candidates)
         write_csv(out_dir / "ball_traces" / f"{seq.info.key}.csv", trace)
         vis = [r for r in trace if r["ball_visible"] and r["labelled"]]
-        gained = sum(1 for r in vis if r["trk_correct"] and not r["det_correct"])
-        lost = sum(1 for r in vis if r["det_correct"] and not r["trk_correct"])
         for row in per_seq[-len(METHODS):]:
-            if row["method"] == "kalman":
-                row["visible_frames_gained_vs_detection_only"] = gained
-                row["visible_frames_lost_vs_detection_only"] = lost
-        log.info("%-10s %-10s visible %4d | det-only R %.1f P %.1f | kalman R %.1f P %.1f (pred %d frames) | AP50 %.1f",
+            key = {"kalman": "trk_correct", "kalman_motion": "mot_correct"}.get(row["method"])
+            if key:
+                row["visible_frames_gained_vs_detection_only"] = sum(1 for r in vis if r[key] and not r["det_correct"])
+                row["visible_frames_lost_vs_detection_only"] = sum(1 for r in vis if r["det_correct"] and not r[key])
+        log.info("%-10s %-10s visible %4d | det-only R %.1f P %.1f | kalman R %.1f P %.1f | +motion R %.1f P %.1f | AP50 %.1f",
                  seq.info.dataset, seq.info.name, results["kalman"]["frames_ball_visible"],
                  100 * results["detection_only"]["recall_dist"], 100 * results["detection_only"]["precision_dist"],
                  100 * results["kalman"]["recall_dist"], 100 * results["kalman"]["precision_dist"],
-                 results["kalman"]["frames_predicted"], 100 * ap)
+                 100 * results["kalman_motion"]["recall_dist"], 100 * results["kalman_motion"]["precision_dist"],
+                 100 * ap)
 
     if not per_seq:
         log.error("No ball sequences with cached detections; nothing to do.")
@@ -176,8 +233,8 @@ def run_ball_experiments(manifest: Manifest) -> None:
             if method == "detection_only":
                 items = [it for d, its in ap_inputs.items() if group == "All ball sequences" or d == group for it in its]
                 row["ap50_candidates"] = round(100.0 * _pooled_ap(items), 3)
-            if method == "kalman":
-                rows = [r for r in per_seq if r["method"] == "kalman"
+            if method in ("kalman", "kalman_motion"):
+                rows = [r for r in per_seq if r["method"] == method
                         and (group == "All ball sequences" or r["dataset"] == group)]
                 row["visible_frames_gained_vs_detection_only"] = sum(
                     r.get("visible_frames_gained_vs_detection_only", 0) for r in rows)
@@ -203,7 +260,8 @@ def run_ball_experiments(manifest: Manifest) -> None:
         "criteria": {"iou": "IoU >= 0.5 with a ground-truth ball box",
                      "dist": "centre within one ball diameter (max(gt w, gt h)) of the ground-truth centre"},
         "identity_metrics": "id_switches reported only for UVY-Track (persistent ball ids); never for InFactory",
-        "detector": tag, "ball_tracker_config": cfg.ball.tracker.__dict__, "ball_filter_config": cfg.ball.filter.__dict__,
+        "detector": tag, "ball_tracker_config": cfg.ball.tracker.__dict__,
+        "ball_motion_config": cfg.ball.motion.__dict__, "ball_filter_config": cfg.ball.filter.__dict__,
         "ball_detector_confidence": cfg.ball.detector.confidence,
         "system": system_info(cfg.ball.detector.device), "summary": summary, "per_sequence": per_seq,
     })

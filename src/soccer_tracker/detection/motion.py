@@ -14,6 +14,10 @@ small, bright, *moving* thing in the frame. This module finds such blobs:
 3. Keep bright, low-saturation pixels (a white/pale ball) and return small,
    roughly compact connected components as candidates.
 
+If too much of the frame is "moving" after compensation (``max_moving_fraction``),
+the camera model has failed (cut, dissolve, fast zoom) and no candidates are
+returned for that frame.
+
 The result is deliberately recall-oriented and noisy (moving boots, shirt
 numbers, crowd), so single candidates are never used as the ball. They are
 linked over time into flights (tracking/flight.py), and only a fast, smooth
@@ -101,6 +105,12 @@ class MotionBallDetector:
         w2 = cv2.warpAffine(g2, a2, (w, h), flags=flags, borderMode=cv2.BORDER_REPLICATE)
         cur = gray.astype(np.int16)
         moving = (np.abs(cur - w1) > cfg.diff_threshold) & (np.abs(cur - w2) > cfg.diff_threshold)
+        # After a good camera-motion compensation only the players and the ball
+        # move: about 1% of the frame. Much more means the similarity model does
+        # not hold (fast zoom with parallax, a cut, a replay dissolve), and any
+        # "motion" is alignment error: report nothing rather than noise.
+        if float(moving.mean()) > cfg.max_moving_fraction:
+            return Detections.empty()
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
         bright = (hsv[..., 2] >= cfg.min_value) & (hsv[..., 1] <= cfg.max_saturation)

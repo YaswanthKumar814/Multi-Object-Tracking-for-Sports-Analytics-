@@ -117,7 +117,7 @@ class BallTrackerConfig:
     # the ball when its first velocity, run backwards to the frame the
     # detector last saw the ball, lands within this distance of the ball...
     flight_anchor_px: float = 35.0
-    flight_max_anchor_gap: int = 10  # ...seen at most this many frames before the flight starts
+    flight_max_anchor_gap: int = 3  # ...seen at most this many frames before the flight starts (a kick shows at once)
     # Optionally, when no ball has been seen recently, also adopt a flight at
     # least this long. 0 = off (default): a sprinting player can look like a
     # slow pass, so a flight must normally be launched from a ball the
@@ -152,6 +152,9 @@ class MotionBallConfig:
     max_side_px: int = 35
     max_aspect_ratio: float = 3.5  # blur stretches the ball into a short streak
     orb_features: int = 1500  # for camera-motion compensation
+    # Above this fraction of moving pixels the camera compensation is not
+    # trusted (cut, dissolve, fast zoom) and the frame gives no candidates.
+    max_moving_fraction: float = 0.04
     # Linking blobs into flights (tracking/flight.py)
     link_min_step_px: float = 4.0  # a new chain must move at least this much per frame...
     link_max_step_px: float = 60.0  # ...and at most this much
@@ -359,6 +362,7 @@ def validate(cfg: AppConfig) -> AppConfig:
     _check(0 <= bm.min_area_px <= bm.max_area_px, "ball.motion: need 0 <= min_area_px <= max_area_px")
     _check(bm.max_aspect_ratio >= 1, "ball.motion.max_aspect_ratio must be >= 1")
     _check(0 <= bm.confidence <= 1, "ball.motion.confidence must be in [0, 1]")
+    _check(0 < bm.max_moving_fraction <= 1, "ball.motion.max_moving_fraction must be in (0, 1]")
     _check(0 <= bm.link_min_step_px <= bm.link_max_step_px, "ball.motion: need 0 <= link_min_step_px <= link_max_step_px")
     _check(bm.flight_min_length >= 3, "ball.motion.flight_min_length must be >= 3")
     _check(bm.backfill_frames >= 0, "ball.motion.backfill_frames must be >= 0")

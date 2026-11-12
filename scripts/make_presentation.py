@@ -137,7 +137,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--manifest", default="configs/experiments.yaml")
     ap.add_argument("--output", default="presentation.pptx")
-    ap.add_argument("--author", default="Yaswanth", help="Name(s) shown on the title slide")
+    ap.add_argument("--author", default="Team 8", help="Name(s) shown on the title slide")
     args = ap.parse_args()
 
     manifest = load_manifest(args.manifest)
@@ -163,12 +163,12 @@ def main() -> int:
 
     # 1 ------------------------------------------------------------------ title
     s = deck.slide("Multi-Object Tracking for Sports Analytics", "Player and Ball Tracking")
-    deck.text(s, "Proposed system: YOLO11n + ByteTrack (players) + Kalman filter (ball)", Inches(0.6), Inches(2.0),
+    deck.text(s, "Proposed system: YOLO11n + ByteTrack (players) + Kalman filter with motion flights (ball)", Inches(0.6), Inches(2.0),
               Inches(12), Inches(0.6), size=24, bold=True, color=ACCENT)
     deck.bullets(s, [
         "Baselines: YOLO11n + SORT and YOLO11n + OC-SORT, on identical detections",
         "Datasets: SportsMOT, UVY-Track, InFactory Soccer Ball Tracking",
-        f"{n_frames:,} labelled frames evaluated, all on a laptop CPU",
+        f"{n_frames:,} labelled frames evaluated, all on a CPU",
     ], Inches(0.6), Inches(2.9), Inches(12), Inches(2.0), size=19)
     deck.text(s, f"Presented by: {args.author}", Inches(0.6), Inches(5.3), Inches(12), Inches(0.5), size=18, bold=True)
     deck.text(s, "Computer Vision, B.Tech Semester 7", Inches(0.6), Inches(5.8), Inches(12), Inches(0.5), size=16,
@@ -186,7 +186,7 @@ def main() -> int:
     deck.text(s, "Objectives", Inches(6.9), Inches(1.4), Inches(6), Inches(0.4), size=20, bold=True, color=ACCENT)
     deck.bullets(s, [
         "Detect players and ball with a lightweight pretrained YOLO11n",
-        "Track players with ByteTrack; track the ball with a Kalman filter",
+        "Track players with ByteTrack; track the ball with a Kalman filter and motion flights",
         "Export annotated video, tracking CSV and JSON summary",
         "Compare with SORT and OC-SORT on the same detections",
         "Evaluate on three public datasets with HOTA, MOTA, IDF1, precision / recall / F1, FPS",
@@ -219,6 +219,7 @@ def main() -> int:
     deck.bullets(s, [
         "One YOLO11n pass per frame serves players and ball; the trackers decide what to trust",
         "Hybrid tracking: multi-object association for players, a single-target motion model for the ball",
+        "Motion flights: camera-compensated moving blobs linked into fast paths that start at the ball",
     ], Inches(0.6), Inches(6.0), Inches(12.1), Inches(1.0), size=15, gap=3)
 
     # 5 ----------------------------------------------------------------- methodology
@@ -234,8 +235,9 @@ def main() -> int:
     deck.bullets(s, [
         "Constant-velocity model, state [x, y, vx, vy]",
         "Gate around the prediction rejects false balls elsewhere",
-        "Reported only after 2 detections",
-        "Predicts through gaps of up to 15 frames, labelled 'predicted'",
+        "Starts on a confident detection; reported after 2 detections",
+        "Predicts at most 6 frames, labelled 'predicted'; not after a kick",
+        "Follows a motion flight when the struck ball is lost by YOLO",
     ], Inches(0.6), Inches(4.1), Inches(5.9), Inches(2.8), size=15, gap=4)
     deck.text(s, "Fair comparison", Inches(6.9), Inches(3.65), Inches(6), Inches(0.4), size=18, bold=True, color=ACCENT)
     deck.bullets(s, [
@@ -278,15 +280,16 @@ def main() -> int:
               Inches(0.6), Inches(5.75), Inches(7.6), Inches(0.6), size=12, color=INK2)
 
     # 7 --------------------------------------------------------------- metrics / ball
-    s = deck.slide("Performance metrics and evaluation", "Ball: detection only vs Kalman tracker (same candidates)")
+    s = deck.slide("Performance metrics and evaluation", "Ball: detection only vs Kalman vs Kalman + motion flights")
     rows = []
     for group in ("UVY-Track", "InFactory"):
-        for method, name in (("detection_only", "Detection only"), ("kalman", "Kalman tracker (proposed)")):
+        for method, name in (("detection_only", "Detection only"), ("kalman", "Kalman (YOLO only)"),
+                             ("kalman_motion", "Kalman + motion (proposed)")):
             r = bl(group, method)
             rows.append([group, name, r["precision_dist"], r["recall_dist"], r["f1_dist"], r["coverage"],
                          r["frames_predicted"], r["track_segments"]])
     deck.table(s, ["Dataset", "Method", "Prec.", "Recall", "F1", "Cover.", "Predicted", "Segm."], rows,
-               Inches(0.6), Inches(1.65), Inches(7.3), row_h=Inches(0.46), size=12,
+               Inches(0.6), Inches(1.55), Inches(7.3), row_h=Inches(0.36), size=11,
                col_widths=[1.3, 2.9, 0.8, 0.9, 0.7, 0.9, 1.2, 0.9])
     deck.image(s, plots / "03_detection_prf.png", Inches(0.6), Inches(4.1), Inches(7.3), Inches(2.85))
     deck.text(s, "Metrics computed", Inches(8.2), Inches(1.55), Inches(4.6), Inches(0.4), size=18, bold=True, color=ACCENT)
@@ -322,10 +325,11 @@ def main() -> int:
     deck.bullets(s, [
         "Generic COCO detector: it also finds referees, staff and coaches that the datasets do not label, which inflates false positives",
         "The proposed tracker is not best on every metric (tuned SORT has higher HOTA on SportsMOT)",
-        "COCO 'sports ball' finds the ball in about a third of the frames; Kalman predictions are right less than half of the time",
+        "COCO 'sports ball' finds the ball in about a third of the frames; 40% of Kalman predictions are wrong",
         f"CPU only: {fps:.1f} FPS for the full pipeline; the detector takes {det_ms:.0f} ms per frame",
+        "Motion flights only help on struck balls and must start where YOLO last saw the ball",
         "Small evaluation subset; not comparable with leaderboards",
-        "No camera-motion compensation, re-identification or team labels",
+        "No camera-motion compensation for players, re-identification or team labels",
     ], Inches(0.6), Inches(1.9), Inches(5.9), Inches(5.0), size=15)
     deck.text(s, "Future work", Inches(6.9), Inches(1.4), Inches(6), Inches(0.4), size=20, bold=True, color=ACCENT)
     deck.bullets(s, [
@@ -339,7 +343,7 @@ def main() -> int:
     ], Inches(6.9), Inches(1.9), Inches(5.9), Inches(5.0), size=15)
 
     # 11 ---------------------------------------------------------------- conclusion
-    ab_k, ab_d = bl("All ball sequences", "kalman"), bl("All ball sequences", "detection_only")
+    ab_k, ab_d = bl("All ball sequences", "kalman_motion"), bl("All ball sequences", "detection_only")
     s = deck.slide("Conclusion")
     deck.bullets(s, [
         "A complete, tested pipeline: video in; annotated video, CSV and JSON out; runs on a CPU",
@@ -350,7 +354,7 @@ def main() -> int:
         f"best OWTA on UVY-Track ({uvy_t['bytetrack']['OWTA']:.1f})",
         f"Not best everywhere: tuned SORT has higher HOTA on SportsMOT ({sm_t['sort']['HOTA']:.1f} vs "
         f"{sm_t['bytetrack']['HOTA']:.1f}) because it starts fewer tracks on unlabelled people",
-        f"Kalman ball tracker vs detection only: recall {ab_d['recall_dist']:.1f} to {ab_k['recall_dist']:.1f}, "
+        f"Ball tracker (Kalman + motion flights) vs detection only: recall {ab_d['recall_dist']:.1f} to {ab_k['recall_dist']:.1f}, "
         f"F1 {ab_d['f1_dist']:.1f} to {ab_k['f1_dist']:.1f}, correct segments {ab_d['track_segments']} to "
         f"{ab_k['track_segments']}; precision drops {ab_d['precision_dist']:.1f} to {ab_k['precision_dist']:.1f}",
         "Predicted ball positions are always labelled as predictions: in the video, the CSV and the metrics",

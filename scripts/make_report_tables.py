@@ -159,7 +159,7 @@ def build_tables(manifest) -> dict[str, str]:
                                 "Centre error of correct outputs (px)"], rows)
         rows = []
         for r in bs:
-            if r["method"] != "kalman":
+            if r["method"] != "kalman_motion":
                 continue
             rows.append([r["group"], r["frames_detected"], r.get("precision_detected_dist"), r["frames_predicted"],
                          r.get("precision_predicted_dist"), r["frames_lost"]])

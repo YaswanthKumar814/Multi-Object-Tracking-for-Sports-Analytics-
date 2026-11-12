@@ -214,11 +214,12 @@ def plot_detection_prf(manifest: Manifest, out: Path) -> None:
     for ax, group in zip(axes[0][1:], ball_groups):
         series = []
         for method, label, color in (("detection_only", "Detection only", BASELINE_GRAY),
-                                     ("kalman", "Kalman tracker (proposed)", PROPOSED)):
+                                     ("kalman", "Kalman tracker (YOLO only)", "#2a78d6"),
+                                     ("kalman_motion", "Kalman + motion flights (proposed)", PROPOSED)):
             r = next(x for x in ball if x["group"] == group and x["method"] == method)
             series.append((label, color, [r["precision_dist"], r["recall_dist"], r["f1_dist"]]))
         _grouped_bars(ax, cats, series, "Score (%), higher is better", ylim=(0, 112))
-        r = next(x for x in ball if x["group"] == group and x["method"] == "kalman")
+        r = next(x for x in ball if x["group"] == group and x["method"] == "kalman_motion")
         ax.set_title(f"Ball on {group}: {r['frames_ball_visible']} visible-ball frames\n"
                      "(centre within one ball diameter)")
         ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=1)
@@ -384,14 +385,16 @@ def plot_player_heatmap(manifest: Manifest, out: Path) -> None:
 # 8-9: ball
 # --------------------------------------------------------------------------- #
 def _ball_trace_sequence(manifest: Manifest):
-    """UVY sequence whose Kalman track contains the most predicted frames (falls back to any ball sequence)."""
+    """The demo clip (UVY soccer_V04, a free kick) if present, else the UVY sequence with the most
+    predicted frames, else any ball sequence. Uses the proposed tracker's trace (``mot_*``)."""
     best, best_n = None, -1
     for seq in manifest.uvy_track() + manifest.infactory():
         p = manifest.results_dir / "metrics" / "ball_traces" / f"{seq.info.key}.csv"
         if not p.is_file():
             continue
         rows = read_csv(p)
-        n = sum(1 for r in rows if r["trk_status"] == "predicted") + (10000 if seq.info.dataset == "UVY-Track" else 0)
+        n = (sum(1 for r in rows if r["mot_status"] == "predicted") + (10000 if seq.info.dataset == "UVY-Track" else 0)
+             + (20000 if seq.info.name == "soccer_V04" else 0))
         if n > best_n:
             best, best_n = (seq, rows), n
     if best is None:
@@ -403,9 +406,9 @@ def plot_ball_trajectory(manifest: Manifest, out: Path) -> None:
     plt = _plt()
     seq, rows = _ball_trace_sequence(manifest)
     frames = np.array([r["frame"] for r in rows])
-    det = [r for r in rows if r["trk_status"] == "detected"]
-    pred = [r for r in rows if r["trk_status"] == "predicted"]
-    lost = [r for r in rows if r["trk_status"] == "lost"]
+    det = [r for r in rows if r["mot_status"] == "detected"]
+    pred = [r for r in rows if r["mot_status"] == "predicted"]
+    lost = [r for r in rows if r["mot_status"] == "lost"]
     gt = [r for r in rows if r["ball_visible"]]
     mid = det[len(det) // 2]["frame"] if det else 1
     img = _frame(seq, mid)
@@ -415,9 +418,9 @@ def plot_ball_trajectory(manifest: Manifest, out: Path) -> None:
     ax1.plot([r["gt_cx"] for r in gt], [r["gt_cy"] for r in gt], color="white", linewidth=3.0, alpha=0.9)
     ax1.plot([r["gt_cx"] for r in gt], [r["gt_cy"] for r in gt], color=BALL_COLORS["gt"], linewidth=1.2,
              label="Ground truth")
-    ax1.scatter([r["trk_cx"] for r in det], [r["trk_cy"] for r in det], s=16, color=BALL_COLORS["detected"],
-                edgecolors="white", linewidths=0.4, label=f"Detected ({len(det)} frames)", zorder=3)
-    ax1.scatter([r["trk_cx"] for r in pred], [r["trk_cy"] for r in pred], s=46, marker="^", facecolors="none",
+    ax1.scatter([r["mot_cx"] for r in det], [r["mot_cy"] for r in det], s=16, color=BALL_COLORS["detected"],
+                edgecolors="white", linewidths=0.4, label=f"Detected: detector or motion flight ({len(det)} frames)", zorder=3)
+    ax1.scatter([r["mot_cx"] for r in pred], [r["mot_cy"] for r in pred], s=46, marker="^", facecolors="none",
                 edgecolors=BALL_COLORS["predicted"], linewidths=1.6,
                 label=f"Predicted by Kalman filter ({len(pred)} frames)", zorder=4)
     ax1.set_xlim(0, seq.info.width)
@@ -426,13 +429,13 @@ def plot_ball_trajectory(manifest: Manifest, out: Path) -> None:
     ax1.set_ylabel("y (pixels)")
     ax1.grid(False)
     ax1.legend(loc="upper right", frameon=True, facecolor=SURFACE, framealpha=0.9)
-    ax1.set_title(f"Ball trajectory: {seq.info.dataset} {seq.info.name} ({len(rows)} frames), drawn over frame {mid}")
+    ax1.set_title(f"Ball trajectory (Kalman + motion flights): {seq.info.dataset} {seq.info.name} ({len(rows)} frames), drawn over frame {mid}")
 
     ax2.plot([r["frame"] for r in gt], [r["gt_cx"] for r in gt], color=BALL_COLORS["gt"], linewidth=1.2,
              label="Ground truth")
-    ax2.scatter([r["frame"] for r in det], [r["trk_cx"] for r in det], s=12, color=BALL_COLORS["detected"],
+    ax2.scatter([r["frame"] for r in det], [r["mot_cx"] for r in det], s=12, color=BALL_COLORS["detected"],
                 label="Detected", zorder=3)
-    ax2.scatter([r["frame"] for r in pred], [r["trk_cx"] for r in pred], s=40, marker="^", facecolors="none",
+    ax2.scatter([r["frame"] for r in pred], [r["mot_cx"] for r in pred], s=40, marker="^", facecolors="none",
                 edgecolors=BALL_COLORS["predicted"], linewidths=1.5, label="Predicted", zorder=4)
     y0 = -0.035 * seq.info.width
     if lost:
@@ -450,7 +453,7 @@ def plot_ball_trajectory(manifest: Manifest, out: Path) -> None:
 
 def plot_ball_status(manifest: Manifest, out: Path) -> None:
     plt = _plt()
-    rows = [r for r in read_csv(manifest.results_dir / "metrics" / "ball_per_sequence.csv") if r["method"] == "kalman"]
+    rows = [r for r in read_csv(manifest.results_dir / "metrics" / "ball_per_sequence.csv") if r["method"] == "kalman_motion"]
     rows = [r for r in rows if r["frames_labelled"] >= 30]
     labels = [f"{r['sequence']} ({r['dataset']}, {r['frames_labelled']} fr.)" for r in rows]
     fig, ax = plt.subplots(figsize=(10.5, 0.42 * len(rows) + 1.9))
@@ -472,7 +475,7 @@ def plot_ball_status(manifest: Manifest, out: Path) -> None:
     ax.invert_yaxis()
     ax.grid(axis="y", visible=False)
     ax.grid(axis="x", visible=True)
-    ax.set_title("Ball track status per sequence (Kalman ball tracker): detected, predicted, lost")
+    ax.set_title("Ball track status per sequence (Kalman + motion flights): detected, predicted, lost")
     ax.legend(loc="upper center", bbox_to_anchor=(0.4, -0.16 if len(rows) > 6 else -0.3), ncol=4)
     _save(fig, out)
 
@@ -583,7 +586,7 @@ def plot_architecture(manifest: Manifest, out: Path) -> None:
     node(50, 5, 21, 13, "Ball filter", "size, squareness,\noptional pitch mask\n(conf >= 0.10)")
     node(77, 36, 21, 13, "ByteTrack", "two-stage association\n(high + low confidence)\npersistent player IDs", "#e8f7f1",
          "#1baf7a", True)
-    node(77, 5, 21, 13, "Kalman ball tracker", "constant velocity, gating,\npredicts through gaps,\nre-acquisition", "#e8f7f1",
+    node(77, 5, 21, 13, "Kalman ball tracker", "gating, short predictions;\nmotion flights follow\nthe ball in flight", "#e8f7f1",
          "#1baf7a", True)
     node(104, 36, 20, 13, "Annotated video", "boxes, IDs, trails,\ndetected vs predicted\nball styling")
     node(104, 20.5, 20, 13, "CSV + JSON", "per-frame tracks,\nrun summary")
@@ -600,10 +603,10 @@ def plot_architecture(manifest: Manifest, out: Path) -> None:
     arrow((98.4, 11.5), (103.6, 11.5))
     arrow((98.4, 15), (103.6, 39), rad=-0.12)
     ax.text(87.5, 28, "Proposed hybrid tracking:\nmulti-object association for players,\n"
-                      "single-target motion model for the ball", ha="center", va="center", fontsize=8,
+                      "single-target motion model + motion flights for the ball", ha="center", va="center", fontsize=8,
             color="#0d7a54", style="italic")
     ax.text(87.5, 51.5, "Baselines swap this block for SORT or OC-SORT", ha="center", fontsize=7.6, color=INK2)
-    ax.set_title("Proposed system: YOLO11n + ByteTrack (players) + Kalman filter (ball)", fontsize=12,
+    ax.set_title("Proposed system: YOLO11n + ByteTrack (players) + Kalman filter with motion flights (ball)", fontsize=12,
                  fontweight="bold")
     _save(fig, out)
 

@@ -87,6 +87,14 @@ def _cpu_name() -> str:
                     return line.split(":", 1)[1].strip()
         except OSError:
             pass
+    if platform.system() == "Darwin":
+        try:
+            name = subprocess.run(["sysctl", "-n", "machdep.cpu.brand_string"], capture_output=True, text=True,
+                                  timeout=5).stdout.strip()
+            if name:
+                return name
+        except Exception:
+            pass
     return platform.processor() or "unknown"
 
 
@@ -126,7 +134,12 @@ def system_info(device: str | None = None) -> dict:
         try:
             info[mod] = __import__(mod).__version__
         except Exception:
-            info[mod] = None
+            try:  # packages without __version__ (e.g. trackers)
+                from importlib.metadata import version
+
+                info[mod] = version(mod)
+            except Exception:
+                info[mod] = None
     try:
         info["git_commit"] = subprocess.run(
             ["git", "rev-parse", "--short", "HEAD"], capture_output=True, text=True, timeout=10

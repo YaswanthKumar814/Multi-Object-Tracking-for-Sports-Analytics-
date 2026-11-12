@@ -168,13 +168,13 @@ def build_tables(manifest) -> dict[str, str]:
 
     # ---- ball ---------------------------------------------------------------
     labels = {"detection_only": "Detection only", "kalman_detected": "Kalman, detected only",
-              "kalman": "Kalman (proposed)"}
+              "kalman": "Kalman (YOLO only)", "kalman_motion": "Kalman + motion (proposed)"}
     lines = []
     groups = [g for g in ("UVY-Track", "InFactory", "All ball sequences") if any(r["group"] == g for r in ball)]
     for gi, g in enumerate(groups):
         if gi:
             lines.append(r"\midrule")
-        for method in ("detection_only", "kalman_detected", "kalman"):
+        for method in ("detection_only", "kalman_detected", "kalman", "kalman_motion"):
             r = next(x for x in ball if x["group"] == g and x["method"] == method)
             lines.append(row([g.replace("All ball sequences", "All (13 seq.)"), labels[method],
                               num(r["precision_dist"]), num(r["recall_dist"]), num(r["f1_dist"]),
@@ -186,7 +186,7 @@ def build_tables(manifest) -> dict[str, str]:
 
     lines = []
     for g in groups:
-        r = next(x for x in ball if x["group"] == g and x["method"] == "kalman")
+        r = next(x for x in ball if x["group"] == g and x["method"] == "kalman_motion")
         lines.append(row([g.replace("All ball sequences", "All"), num(r["frames_detected"]),
                           num(r.get("precision_detected_dist")), num(r["frames_predicted"]),
                           num(r.get("precision_predicted_dist"))]))
@@ -221,11 +221,16 @@ def build_tables(manifest) -> dict[str, str]:
     # ---- hardware sentence --------------------------------------------------
     s = bench["system"]
     cpu = esc(str(s.get("cpu", "CPU")).replace("(R)", "").replace("(TM)", ""))
+    plat = str(s.get("platform", ""))
+    os_name = ("macOS" if plat.startswith("macOS") else "Windows" if plat.startswith("Windows")
+               else "Linux" if plat.startswith("Linux") else esc(plat.split("-")[0]))
+    gpu = esc(s["gpu"]) + " GPU available but not used" if s.get("gpu") else "no GPU used"
     t["HARDWARE"] = (
-        f"{cpu} laptop CPU ({s.get('cpu_physical_cores')} physical / {s.get('cpu_logical_cores')} logical cores), "
-        f"{s.get('ram_gb')}~GB RAM, no GPU, Windows~11, Python~{s.get('python')}, PyTorch~{esc(s.get('torch'))} "
-        f"with {s.get('torch_threads')} threads, Ultralytics~{s.get('ultralytics')}, "
-        f"\\texttt{{trackers}}~2.6.1, \\texttt{{supervision}}~{s.get('supervision')} and OpenCV~{s.get('cv2')}"
+        f"{cpu} CPU ({s.get('cpu_physical_cores')} physical / {s.get('cpu_logical_cores')} logical cores), "
+        f"{s.get('ram_gb')}~GB RAM, {gpu} (device: {esc(s.get('device'))}), {os_name}, Python~{s.get('python')}, "
+        f"PyTorch~{esc(s.get('torch'))} with {s.get('torch_threads')} threads, Ultralytics~{s.get('ultralytics')}, "
+        f"\\texttt{{trackers}}~{esc(s.get('trackers') or '2.6.1')}, \\texttt{{supervision}}~{s.get('supervision')} "
+        f"and OpenCV~{s.get('cv2')}"
     )
     return t
 
@@ -265,27 +270,29 @@ def prose_checks(manifest) -> list[str]:
                                                      - min(trk(sm, a, "HOTA", "default") for a in ALGORITHMS), 1)),
         ("UVY OWTA ByteTrack", 56.8, round(trk(uvy, "bytetrack", "OWTA"), 1)),
         ("UVY DetRe ByteTrack", 58.7, round(trk(uvy, "bytetrack", "DetRe"), 1)),
-        ("UVY IDSW ByteTrack", 23, trk(uvy, "bytetrack", "IDSW")),
-        ("UVY IDSW OC-SORT", 44, trk(uvy, "ocsort", "IDSW")),
-        ("Ball recall detection only", 34.5, round(bl("detection_only", "recall_dist"), 1)),
-        ("Ball recall Kalman", 43.3, round(bl("kalman", "recall_dist"), 1)),
-        ("Ball F1 detection only", 45.4, round(bl("detection_only", "f1_dist"), 1)),
-        ("Ball F1 Kalman", 49.3, round(bl("kalman", "f1_dist"), 1)),
+        ("UVY IDSW ByteTrack", 24, trk(uvy, "bytetrack", "IDSW")),
+        ("UVY IDSW OC-SORT", 47, trk(uvy, "ocsort", "IDSW")),
+        ("Ball recall detection only", 34.8, round(bl("detection_only", "recall_dist"), 1)),
+        ("Ball recall Kalman", 35.8, round(bl("kalman", "recall_dist"), 1)),
+        ("Ball F1 detection only", 45.7, round(bl("detection_only", "f1_dist"), 1)),
+        ("Ball F1 Kalman", 47.6, round(bl("kalman", "f1_dist"), 1)),
         ("Ball precision detection only", 66.4, round(bl("detection_only", "precision_dist"), 1)),
-        ("Ball precision Kalman", 57.4, round(bl("kalman", "precision_dist"), 1)),
-        ("Ball segments detection only", 168, bl("detection_only", "track_segments")),
-        ("Ball segments Kalman", 47, bl("kalman", "track_segments")),
-        ("Ball precision of predicted positions", 42.6, round(bl("kalman", "precision_predicted_dist"), 1)),
-        ("Ball precision of tracker-accepted detections", 68.4, round(bl("kalman", "precision_detected_dist"), 1)),
-        ("Ball F1 IoU detection only", 26.7, round(bl("detection_only", "f1_iou"), 1)),
-        ("Ball F1 IoU Kalman", 24.6, round(bl("kalman", "f1_iou"), 1)),
-        ("Ball AP50", 16.3, round(bl("detection_only", "ap50_candidates"), 1)),
-        ("Ball frames gained", 353, bl("kalman", "visible_frames_gained_vs_detection_only")),
-        ("Ball frames lost", 142, bl("kalman", "visible_frames_lost_vs_detection_only")),
-        ("Detector share of runtime (%)", 87, round(100 * bench["stages"]["detection"]["median_ms"] / sum(
+        ("Ball precision Kalman", 71.1, round(bl("kalman", "precision_dist"), 1)),
+        ("Ball precision proposed", 70.0, round(bl("kalman_motion", "precision_dist"), 1)),
+        ("Ball recall proposed", 36.4, round(bl("kalman_motion", "recall_dist"), 1)),
+        ("Ball F1 proposed", 47.9, round(bl("kalman_motion", "f1_dist"), 1)),
+        ("Ball segments detection only", 175, bl("detection_only", "track_segments")),
+        ("Ball segments proposed", 44, bl("kalman_motion", "track_segments")),
+        ("Ball precision of predicted positions", 60.1, round(bl("kalman_motion", "precision_predicted_dist"), 1)),
+        ("Ball precision of tracker-accepted detections", 73.2, round(bl("kalman_motion", "precision_detected_dist"), 1)),
+        ("Ball F1 IoU detection only", 26.4, round(bl("detection_only", "f1_iou"), 1)),
+        ("Ball F1 IoU proposed", 26.9, round(bl("kalman_motion", "f1_iou"), 1)),
+        ("Ball frames gained", 249, bl("kalman_motion", "visible_frames_gained_vs_detection_only")),
+        ("Ball frames lost", 212, bl("kalman_motion", "visible_frames_lost_vs_detection_only")),
+        ("Detector share of runtime (%)", 64, round(100 * bench["stages"]["detection"]["median_ms"] / sum(
             v["median_ms"] for k, v in bench["stages"].items()
             if not (k.startswith("player filter") and "ByteTrack" not in k)))),
-        ("Detector ms per frame", 287, round(bench["stages"]["detection"]["median_ms"])),
+        ("Detector ms per frame", 113, round(bench["stages"]["detection"]["median_ms"])),
     ]
     return [f"{label}: text says {said}, metrics now give {actual}" for label, said, actual in expected if said != actual]
 

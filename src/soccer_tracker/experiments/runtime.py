@@ -19,7 +19,9 @@ import numpy as np
 
 from ..detection.base import Detections
 from ..detection.filters import filter_balls, filter_players
+from ..detection.motion import MotionBallDetector
 from ..tracking.ball_tracker import BallTracker
+from ..tracking.flight import FlightLinker
 from ..tracking.factory import ALGORITHMS, TRACKER_LABELS, build_mot_tracker
 from ..tracking.types import PLAYER, TrackedObject
 from ..video_io import VideoWriter
@@ -111,13 +113,22 @@ def run_runtime_benchmark(manifest: Manifest) -> None:
         tracker_ms[algo] = _ms(samples)
         stages[f"player filter + {TRACKER_LABELS[algo].split(' + ')[1]}"] = tracker_ms[algo]
 
-    # ball filter + Kalman tracker
+    # ball: motion candidates + flight linking (proposed), then filter + Kalman tracker
+    motion = MotionBallDetector(cfg.ball.motion) if cfg.ball.motion.enabled else None
+    linker = FlightLinker(cfg.ball.motion) if motion is not None else None
+    flights_per_frame, motion_samples = [], []
+    for i in range(n):
+        t0 = time.perf_counter()
+        flights_per_frame.append(linker.update(i, motion.detect(frames[i])) if motion is not None else ())
+        motion_samples.append(time.perf_counter() - t0)
+    if motion is not None:
+        stages["ball motion: camera compensation + flight linking"] = _ms(motion_samples)
     ball_tracker = BallTracker(cfg.ball.tracker)
     samples, balls, trajs = [], [], []
     for i in range(n):
         t0 = time.perf_counter()
         kept = filter_balls(dets_b[i] if len(dets_b[i]) else Detections.empty(), cfg.ball.filter)
-        obj = ball_tracker.update(i, kept, shape)
+        obj = ball_tracker.update(i, kept, shape, flights_per_frame[i])
         samples.append(time.perf_counter() - t0)
         balls.append(obj)
         trajs.append(list(ball_tracker.trajectory) if obj is not None else [])
@@ -139,8 +150,9 @@ def run_runtime_benchmark(manifest: Manifest) -> None:
     stages["video encoding (mp4v)"] = _ms(t_write)
 
     common = sum(stages[k]["median_ms"] for k in ("frame reading (JPEG decode)", "detection",
+                                                  "ball motion: camera compensation + flight linking",
                                                   "ball filter + Kalman tracker", "drawing annotations",
-                                                  "video encoding (mp4v)"))
+                                                  "video encoding (mp4v)") if k in stages)
     totals = {a: round(common + tracker_ms[a]["median_ms"], 3) for a in ALGORITHMS}
     payload = {
         "sequence": f"{seq.info.dataset}/{seq.info.name}", "frames": n, "warmup_frames_excluded": WARMUP,

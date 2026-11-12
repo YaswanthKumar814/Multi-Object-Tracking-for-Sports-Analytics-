@@ -92,7 +92,7 @@ class BallTracker:
         # Positions where the detector *saw* the ball (not motion-inferred ones),
         # kept across resets: a flight must start at one of them, so a wrong
         # flight can never become the anchor for the next one.
-        self._anchor_history: deque[tuple[int, float, float]] = deque(maxlen=60)
+        self._anchor_history: deque[tuple[int, float, float, float]] = deque(maxlen=60)  # (frame, x, y, conf)
         self._flight_id: Optional[int] = None  # flight currently being followed
         # Corrected outputs for earlier frames (frame_idx -> ball), filled when a
         # flight is adopted; the pipeline applies them to frames it still holds.
@@ -179,11 +179,9 @@ class BallTracker:
             flight = None
         if flight is not None:
             return self._follow_flight(frame_idx, flight)
-        if self._flight_id is not None:
-            # The flight we followed was not matched this frame: the ball hit
-            # the net, was caught or bounced. Its velocity no longer holds, so
-            # do not extrapolate it; only a detection can bring the ball back.
-            self._last_innovation = float("inf")
+        # The followed flight was not matched this frame (net, save, bounce, or
+        # simply a missed blob): fall back to the appearance tracker, which coasts
+        # on the flight's velocity for at most max_missed_frames, labelled predicted.
         return self._update_appearance(frame_idx, candidates, frame_shape)
 
     # -- motion flights ------------------------------------------------------ #
@@ -199,7 +197,7 @@ class BallTracker:
 
     def _last_seen(self, frame_idx: int) -> Optional[tuple[int, np.ndarray]]:
         """(frame, position) where the detector last saw the ball, at or before ``frame_idx``."""
-        for f, x, y in reversed(self._anchor_history):
+        for f, x, y, _ in reversed(self._anchor_history):
             if f <= frame_idx:
                 return (f, np.array([x, y])) if frame_idx - f <= self.cfg.flight_max_anchor_gap else None
         return None
@@ -218,7 +216,18 @@ class BallTracker:
         (t0, x0, y0), (t1, x1, y1) = fl.points[0], fl.points[1]
         v0 = np.array([x1 - x0, y1 - y0]) / max(1, t1 - t0)
         origin = np.array([x0, y0]) - v0 * (t0 - f_seen)
-        return bool(np.linalg.norm(origin - anchor) <= self.cfg.flight_anchor_px)
+        if np.linalg.norm(origin - anchor) > self.cfg.flight_anchor_px:
+            return False
+        # A kicked ball has left: if the detector confidently saw the ball after
+        # the launch somewhere the flight was not, something else moved past it.
+        path = {f: np.array([x, y]) for f, x, y in fl.points}
+        for f, x, y, conf in self._anchor_history:
+            if f > t0 and conf >= self.cfg.start_confidence:
+                near = min(path, key=lambda g: abs(g - f))
+                if abs(near - f) <= 1 and np.linalg.norm(path[near] - [x, y]) <= 2 * self.cfg.flight_continue_px:
+                    continue  # the detector saw the ball on the flight
+                return False
+        return True
 
     def _pick_flight(self, frame_idx: int, flights: Sequence[Flight]) -> Optional[Flight]:
         cfg = self.cfg
@@ -346,7 +355,7 @@ class BallTracker:
         pos = self._kf.position
         self.trajectory.append(TrajectoryPoint(frame_idx, float(pos[0]), float(pos[1]), status))
         if status == DETECTED and self.confirmed and self._class_name != MOTION_CLASS:
-            self._anchor_history.append((frame_idx, float(pos[0]), float(pos[1])))
+            self._anchor_history.append((frame_idx, float(pos[0]), float(pos[1]), float(self._last_conf or 0.0)))
         if not self.confirmed:
             return None
         return self._object(pos, status, self._class_name, self._last_conf if status == DETECTED else None)
