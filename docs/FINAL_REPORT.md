@@ -896,9 +896,9 @@ Tracking-stage latency averaged over all six test sequences:
 <!-- TABLE:tracker_latency -->
 | Method | Tracking stage (ms / frame) | Tracking stage alone (FPS) |
 |---|---|---|
-| YOLO11n + SORT | 0.32 | 3123.50 |
-| YOLO11n + OC-SORT | 0.88 | 1132.70 |
-| YOLO11n + ByteTrack (proposed) | 0.41 | 2434.10 |
+| YOLO11n + SORT | 0.30 | 3319.00 |
+| YOLO11n + OC-SORT | 0.86 | 1158.20 |
+| YOLO11n + ByteTrack (proposed) | 0.39 | 2576.40 |
 <!-- /TABLE:tracker_latency -->
 
 * The detector takes 64% of the time and the ball motion stage (ORB features, frame

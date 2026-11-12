@@ -14,8 +14,15 @@ weights/*
 # Datasets (see DATASETS.md for how to obtain the subsets used)
 data/
 
-# Application outputs
-
+# Application outputs: only the final, compressed result videos and their
+# track/summary files are kept in git (re-encoded to small H.264).
+outputs/*
+!outputs/uvy_soccer_V0[24]_tracked_h264.mp4
+!outputs/uvy_soccer_V0[24]_tracks.csv
+!outputs/uvy_soccer_V0[24]_summary.json
+*.mp4
+!outputs/uvy_soccer_V0[24]_tracked_h264.mp4
+*.avi
 
 # Experiment outputs: keep the small result files (metrics, plots, database,
 # MOT text files); ignore bulky or regenerable ones.

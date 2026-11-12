@@ -56,7 +56,7 @@
   },
   "ball_detector_confidence": 0.1,
   "system": {
-    "timestamp": "2026-11-12T10:22:15",
+    "timestamp": "2026-11-12T23:04:49",
     "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
     "cpu": "Apple M1",
     "cpu_logical_cores": 8,
@@ -75,7 +75,7 @@
     "supervision": "0.31.3",
     "cv2": "5.0.0",
     "numpy": "2.5.4",
-    "git_commit": "494d9b3"
+    "git_commit": "561d66c"
   },
   "summary": [
     {
@@ -696,7 +696,7 @@
       "predicted_ids_used": 1,
       "gt_ball_tracks": 2,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0365,
+      "tracker_ms_per_frame": 0.0286,
       "detector_ms_per_frame": 111.53
     },
     {
@@ -746,7 +746,7 @@
       "predicted_ids_used": 1,
       "gt_ball_tracks": 2,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0365,
+      "tracker_ms_per_frame": 0.0286,
       "detector_ms_per_frame": 111.53,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 1
@@ -798,7 +798,7 @@
       "predicted_ids_used": 1,
       "gt_ball_tracks": 2,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 32.7685,
+      "tracker_ms_per_frame": 26.7541,
       "detector_ms_per_frame": 111.53,
       "visible_frames_gained_vs_detection_only": 14,
       "visible_frames_lost_vs_detection_only": 1
@@ -900,7 +900,7 @@
       "predicted_ids_used": 2,
       "gt_ball_tracks": 1,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0211,
+      "tracker_ms_per_frame": 0.018,
       "detector_ms_per_frame": 117.92
     },
     {
@@ -950,7 +950,7 @@
       "predicted_ids_used": 2,
       "gt_ball_tracks": 1,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0211,
+      "tracker_ms_per_frame": 0.018,
       "detector_ms_per_frame": 117.92,
       "visible_frames_gained_vs_detection_only": 89,
       "visible_frames_lost_vs_detection_only": 61
@@ -1002,7 +1002,7 @@
       "predicted_ids_used": 2,
       "gt_ball_tracks": 1,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 14.3606,
+      "tracker_ms_per_frame": 10.4461,
       "detector_ms_per_frame": 117.92,
       "visible_frames_gained_vs_detection_only": 89,
       "visible_frames_lost_vs_detection_only": 61
@@ -1104,7 +1104,7 @@
       "predicted_ids_used": 4,
       "gt_ball_tracks": 1,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0121,
+      "tracker_ms_per_frame": 0.0146,
       "detector_ms_per_frame": 116.72
     },
     {
@@ -1154,7 +1154,7 @@
       "predicted_ids_used": 4,
       "gt_ball_tracks": 1,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0121,
+      "tracker_ms_per_frame": 0.0146,
       "detector_ms_per_frame": 116.72,
       "visible_frames_gained_vs_detection_only": 58,
       "visible_frames_lost_vs_detection_only": 84
@@ -1206,7 +1206,7 @@
       "predicted_ids_used": 4,
       "gt_ball_tracks": 1,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 36.1574,
+      "tracker_ms_per_frame": 30.9587,
       "detector_ms_per_frame": 116.72,
       "visible_frames_gained_vs_detection_only": 58,
       "visible_frames_lost_vs_detection_only": 84
@@ -1308,7 +1308,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0193,
+      "tracker_ms_per_frame": 0.0159,
       "detector_ms_per_frame": 112.04
     },
     {
@@ -1358,7 +1358,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0193,
+      "tracker_ms_per_frame": 0.0159,
       "detector_ms_per_frame": 112.04,
       "visible_frames_gained_vs_detection_only": 7,
       "visible_frames_lost_vs_detection_only": 13
@@ -1410,7 +1410,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 29.2327,
+      "tracker_ms_per_frame": 24.7386,
       "detector_ms_per_frame": 112.04,
       "visible_frames_gained_vs_detection_only": 7,
       "visible_frames_lost_vs_detection_only": 13
@@ -1512,7 +1512,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0017,
+      "tracker_ms_per_frame": 0.0013,
       "detector_ms_per_frame": 170.19
     },
     {
@@ -1562,7 +1562,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0017,
+      "tracker_ms_per_frame": 0.0013,
       "detector_ms_per_frame": 170.19,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 0
@@ -1614,7 +1614,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 19.1274,
+      "tracker_ms_per_frame": 15.6245,
       "detector_ms_per_frame": 170.19,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 0
@@ -1716,7 +1716,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0065,
+      "tracker_ms_per_frame": 0.006,
       "detector_ms_per_frame": 171.48
     },
     {
@@ -1766,7 +1766,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0065,
+      "tracker_ms_per_frame": 0.006,
       "detector_ms_per_frame": 171.48,
       "visible_frames_gained_vs_detection_only": 42,
       "visible_frames_lost_vs_detection_only": 23
@@ -1818,7 +1818,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 20.0685,
+      "tracker_ms_per_frame": 17.9579,
       "detector_ms_per_frame": 171.48,
       "visible_frames_gained_vs_detection_only": 42,
       "visible_frames_lost_vs_detection_only": 23
@@ -1920,7 +1920,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0005,
+      "tracker_ms_per_frame": 0.0004,
       "detector_ms_per_frame": 169.61
     },
     {
@@ -1970,7 +1970,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0005,
+      "tracker_ms_per_frame": 0.0004,
       "detector_ms_per_frame": 169.61,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 1
@@ -2022,7 +2022,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 16.6599,
+      "tracker_ms_per_frame": 15.8708,
       "detector_ms_per_frame": 169.61,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 1
@@ -2124,7 +2124,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0425,
+      "tracker_ms_per_frame": 0.2814,
       "detector_ms_per_frame": 111.1
     },
     {
@@ -2174,7 +2174,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0425,
+      "tracker_ms_per_frame": 0.2814,
       "detector_ms_per_frame": 111.1,
       "visible_frames_gained_vs_detection_only": 5,
       "visible_frames_lost_vs_detection_only": 10
@@ -2226,7 +2226,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 25.9591,
+      "tracker_ms_per_frame": 25.574,
       "detector_ms_per_frame": 111.1,
       "visible_frames_gained_vs_detection_only": 5,
       "visible_frames_lost_vs_detection_only": 10
@@ -2328,7 +2328,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0302,
+      "tracker_ms_per_frame": 0.0259,
       "detector_ms_per_frame": 115.4
     },
     {
@@ -2378,7 +2378,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0302,
+      "tracker_ms_per_frame": 0.0259,
       "detector_ms_per_frame": 115.4,
       "visible_frames_gained_vs_detection_only": 13,
       "visible_frames_lost_vs_detection_only": 2
@@ -2430,7 +2430,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 28.9671,
+      "tracker_ms_per_frame": 24.0169,
       "detector_ms_per_frame": 115.4,
       "visible_frames_gained_vs_detection_only": 13,
       "visible_frames_lost_vs_detection_only": 2
@@ -2532,7 +2532,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0155,
+      "tracker_ms_per_frame": 0.0111,
       "detector_ms_per_frame": 111.2
     },
     {
@@ -2582,7 +2582,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0155,
+      "tracker_ms_per_frame": 0.0111,
       "detector_ms_per_frame": 111.2,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 6
@@ -2634,7 +2634,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 27.5161,
+      "tracker_ms_per_frame": 25.1372,
       "detector_ms_per_frame": 111.2,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 6
@@ -2736,7 +2736,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0116,
+      "tracker_ms_per_frame": 0.0092,
       "detector_ms_per_frame": 115.39
     },
     {
@@ -2786,7 +2786,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0116,
+      "tracker_ms_per_frame": 0.0092,
       "detector_ms_per_frame": 115.39,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 0
@@ -2838,7 +2838,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 26.9902,
+      "tracker_ms_per_frame": 28.0227,
       "detector_ms_per_frame": 115.39,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 0
@@ -2940,7 +2940,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0189,
+      "tracker_ms_per_frame": 0.0188,
       "detector_ms_per_frame": 112.2
     },
     {
@@ -2990,7 +2990,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0189,
+      "tracker_ms_per_frame": 0.0188,
       "detector_ms_per_frame": 112.2,
       "visible_frames_gained_vs_detection_only": 21,
       "visible_frames_lost_vs_detection_only": 11
@@ -3042,7 +3042,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 27.8376,
+      "tracker_ms_per_frame": 24.8971,
       "detector_ms_per_frame": 112.2,
       "visible_frames_gained_vs_detection_only": 21,
       "visible_frames_lost_vs_detection_only": 11
@@ -3144,7 +3144,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0006,
+      "tracker_ms_per_frame": 0.0005,
       "detector_ms_per_frame": 110.92
     },
     {
@@ -3194,7 +3194,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 0.0006,
+      "tracker_ms_per_frame": 0.0005,
       "detector_ms_per_frame": 110.92,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 0
@@ -3246,7 +3246,7 @@
       "predicted_ids_used": null,
       "gt_ball_tracks": null,
       "ap50_candidates": null,
-      "tracker_ms_per_frame": 30.4988,
+      "tracker_ms_per_frame": 37.8092,
       "detector_ms_per_frame": 110.92,
       "visible_frames_gained_vs_detection_only": 0,
       "visible_frames_lost_vs_detection_only": 0
