@@ -15,9 +15,7 @@ weights/*
 data/
 
 # Application outputs
-outputs/
-*.mp4
-*.avi
+
 
 # Experiment outputs: keep the small result files (metrics, plots, database,
 # MOT text files); ignore bulky or regenerable ones.
