@@ -131,6 +131,15 @@ moving blobs, and trajectory-based methods [28] keep only candidate chains whose
 motion is physically plausible for a ball. This project adds such a step for the
 ball in flight.
 
+**Related work at Amrita Vishwa Vidyapeetham, Bengaluru.** YOLO detectors have been
+applied to online exam proctoring [32], classroom attentiveness monitoring [33] and a
+low-cost perception framework for autonomous driving [34]. Combining a deep detector
+with a tracker, Kumar et al. [31] detect and track multiple pedestrians, the closest
+task to player tracking, and Peri and Palaniswamy [35] track small, fast-moving
+animals with YOLOv8 and DeepSORT. Aarthi et al. [36] detect moving objects in
+surveillance video with a bottom-up approach, related to the motion stage this
+project uses for the ball in flight.
+
 **Detectors.** The YOLO family [6] performs detection in a single network pass.
 This project uses the COCO-pretrained [8] YOLO11 nano model from Ultralytics [7].
 
@@ -1032,3 +1041,15 @@ detector is the most valuable next step.
 [29] E. Rublee, V. Rabaud, K. Konolige, G. Bradski. "ORB: An Efficient Alternative to SIFT or SURF." IEEE International Conference on Computer Vision (ICCV), 2011.
 
 [30] M. A. Fischler, R. C. Bolles. "Random Sample Consensus: A Paradigm for Model Fitting with Applications to Image Analysis and Automated Cartography." Communications of the ACM, 24(6), 1981.
+
+[31] A. Kumar, T. Singh, P. Duraisamy. "Detection and Tracking of Multiple Pedestrians Using Deep Learning." 14th International Conference on Computing Communication and Networking Technologies (ICCCNT), IEEE, 2023, pp. 1-6.
+
+[32] T. Singh, R. R. Nair, T. Babu, P. Duraisamy. "Enhancing Academic Integrity in Online Assessments: Introducing an Effective Online Exam Proctoring Model using YOLO." Procedia Computer Science, 235, 2024, pp. 1399-1408.
+
+[33] R. R. Nair, T. Babu, T. Singh, P. Duraisamy, V. Mehra. "Class Room Student Attentiveness Model based on YOLO." 14th International Conference on Computing Communication and Networking Technologies (ICCCNT), IEEE, 2023.
+
+[34] V. Gopi Kiran, T. Hemanth Babu, N. A. Vidula, T. Singh. "A Low-Cost Vision-Based Framework for Autonomous Driving Using YOLO, MiDaS, and Stereo Vision." IFIP Advances in Information and Communication Technology, Springer, 2025. https://doi.org/10.1007/978-3-031-98360-3_4
+
+[35] S. D. B. Peri, S. Palaniswamy. "A Novel Approach to Detect and Track Small Animals using YOLOv8 and DeepSORT." 4th IEEE Global Conference for Advancement in Technology (GCAT), 2023, pp. 1-6. https://doi.org/10.1109/GCAT59970.2023.10353296
+
+[36] R. Aarthi, J. Amudha, K. Boomika, A. Varrier. "Detection of Moving Objects in Surveillance Video by Integrating Bottom-up Approach with Knowledge Base." Procedia Computer Science, 78, 2016, pp. 160-164.

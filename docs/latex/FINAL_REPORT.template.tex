@@ -142,6 +142,17 @@ methods~\cite{yu2006} generate many ball candidates and keep only the candidate
 chains whose motion is plausible for a ball. This work adds such a step for the
 ball in flight.
 
+\textbf{Related work at Amrita Vishwa Vidyapeetham, Bengaluru.} YOLO detectors
+have been applied to online exam proctoring~\cite{singh2024proctor}, classroom
+attentiveness monitoring~\cite{nair2023attentive} and a low-cost perception
+framework for autonomous driving~\cite{gopikiran2025driving}. Combining a deep
+detector with a tracker, Kumar \emph{et al.}~\cite{kumar2023pedestrian} detect and
+track multiple pedestrians, the closest task to player tracking, and Peri and
+Palaniswamy~\cite{peri2023animals} track small, fast-moving animals with YOLOv8 and
+DeepSORT. Aarthi \emph{et al.}~\cite{aarthi2016moving} detect moving objects in
+surveillance video with a bottom-up approach, related to the motion stage used
+here for the ball in flight.
+
 \textbf{Detectors and metrics.} The YOLO family~\cite{yolo} performs detection in
 a single network pass; this work uses the COCO-pretrained~\cite{coco} YOLO11 nano
 model~\cite{yolo11}. CLEAR-MOT~\cite{clear} defines MOTA, which is dominated by
@@ -958,6 +969,12 @@ most promising improvement.
 \bibitem{yu2006} X. Yu, H. W. Leong, C. Xu, and Q. Tian, ``Trajectory-based ball detection and tracking in broadcast soccer video,'' \emph{IEEE Trans. Multimedia}, vol. 8, no. 6, 2006.
 \bibitem{orb} E. Rublee, V. Rabaud, K. Konolige, and G. Bradski, ``ORB: An efficient alternative to SIFT or SURF,'' in \emph{Proc. IEEE Int. Conf. Comput. Vis. (ICCV)}, 2011.
 \bibitem{ransac} M. A. Fischler and R. C. Bolles, ``Random sample consensus: A paradigm for model fitting with applications to image analysis and automated cartography,'' \emph{Commun. ACM}, vol. 24, no. 6, 1981.
+\bibitem{kumar2023pedestrian} A. Kumar, T. Singh, and P. Duraisamy, ``Detection and tracking of multiple pedestrians using deep learning,'' in \emph{Proc. 14th Int. Conf. Comput. Commun. Netw. Technol. (ICCCNT)}, 2023, pp. 1--6.
+\bibitem{singh2024proctor} T. Singh, R. R. Nair, T. Babu, and P. Duraisamy, ``Enhancing academic integrity in online assessments: Introducing an effective online exam proctoring model using YOLO,'' \emph{Procedia Comput. Sci.}, vol. 235, pp. 1399--1408, 2024.
+\bibitem{nair2023attentive} R. R. Nair, T. Babu, T. Singh, P. Duraisamy, and V. Mehra, ``Class room student attentiveness model based on YOLO,'' in \emph{Proc. 14th Int. Conf. Comput. Commun. Netw. Technol. (ICCCNT)}, 2023.
+\bibitem{gopikiran2025driving} V. Gopi Kiran, T. Hemanth Babu, N. A. Vidula, and T. Singh, ``A low-cost vision-based framework for autonomous driving using YOLO, MiDaS, and stereo vision,'' in \emph{IFIP Advances in Information and Communication Technology}, Springer, 2025, doi: 10.1007/978-3-031-98360-3\_4.
+\bibitem{peri2023animals} S. D. B. Peri and S. Palaniswamy, ``A novel approach to detect and track small animals using YOLOv8 and DeepSORT,'' in \emph{Proc. 4th IEEE Global Conf. Advancement Technol. (GCAT)}, 2023, pp. 1--6, doi: 10.1109/GCAT59970.2023.10353296.
+\bibitem{aarthi2016moving} R. Aarthi, J. Amudha, K. Boomika, and A. Varrier, ``Detection of moving objects in surveillance video by integrating bottom-up approach with knowledge base,'' \emph{Procedia Comput. Sci.}, vol. 78, pp. 160--164, 2016.
 \bibitem{owta} Y. Liu, I. E. Zulfikar, J. Luiten, A. Dave, D. Ramanan, B. Leibe, A. O\v{s}ep, and L. Leal-Taix\'e, ``Opening up open world tracking,'' in \emph{Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR)}, 2022.
 \end{thebibliography}
 
