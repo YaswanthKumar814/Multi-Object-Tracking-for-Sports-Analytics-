@@ -54,7 +54,9 @@
 | `evaluation/mot.py` | HOTA / CLEAR / Identity via `trackers.eval` (TrackEval-compatible); MOT file conversion | trackers |
 | `evaluation/detection.py`, `evaluation/ball.py` | Custom, unit-tested evaluators: precision / recall / F1 / AP, ball coverage, centre error, continuity | NumPy, SciPy |
 | `experiments/` | Manifest, detection cache, tracker comparison, ball evaluation, model comparison, runtime benchmark, plots, SQLite database | all of the above, matplotlib |
-| `tracking/ball_tracker.py` | Single-target Kalman tracker and trajectory buffer | NumPy |
+| `tracking/ball_tracker.py` | Single-target Kalman tracker and trajectory buffer; adopts motion flights | NumPy |
+| `detection/motion.py` | Camera-motion-compensated three-frame differencing: moving-ball candidates | OpenCV |
+| `tracking/flight.py` | Links motion candidates into fast, smooth ball flights | NumPy |
 | `visualization.py` | Boxes, IDs, trails, ball marker, HUD | OpenCV |
 | `analytics.py` | CSV export, run statistics, JSON summary | stdlib |
 | `pipeline.py` | Orchestration, resource lifetime, error wrapping | all of the above |
@@ -88,6 +90,25 @@ a dedicated tracker that decides *which candidate is the ball* using a motion mo
 - re-initialise when a confident detection appears outside the gate after a few
   misses (long passes, camera cuts), or drop the track if the prediction leaves the frame;
 - report only after `min_hits` detections, to suppress one-frame false positives.
+
+**Ball in flight.** A struck ball is motion-blurred and the appearance detector loses
+it exactly when tracking matters most. A second, motion-based path covers this:
+
+- `detection/motion.py`: align the two previous frames to the current one (ORB
+  features, RANSAC similarity transform) and keep bright, pale pixels that differ from
+  both (three-frame differencing using past frames only); small compact blobs are
+  candidates. Noisy by design: boots, socks and shirt numbers also move.
+- `tracking/flight.py`: link candidates frame to frame under constant velocity; a chain
+  is a *flight* while it is long (≥ 6), fast (median ≥ 8 px/frame) and smooth (median
+  velocity change ≤ max(4 px, 0.3 × speed)), re-checked every frame.
+- `BallTracker`: a flight is adopted only when no confident detection is in the gate
+  and the flight's first velocity, run back to the frame the detector last saw the
+  ball, lands within `flight_anchor_px` of it (it was launched from the ball). Anchors
+  are detector sightings only, so a wrong flight can never anchor the next one. On
+  adoption the filter restarts with the flight's velocity and the flight's earlier
+  points are returned as amendments; the pipeline holds output `backfill_frames`
+  frames and applies them (never over a confident detection). When the followed
+  flight ends, the ball is not extrapolated.
 
 **Shared inference.** With default COCO weights the player and ball detectors would
 run the same network twice. When weights, `imgsz`, device and tiling allow it, one

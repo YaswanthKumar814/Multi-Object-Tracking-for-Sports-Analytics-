@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import logging
 import time
+from collections import deque
 from pathlib import Path
 from typing import Callable, Optional
 
@@ -17,8 +18,10 @@ from .analytics import RunStats, TrackCsvWriter, write_summary
 from .config import AppConfig, config_to_dict
 from .detection.base import Detector
 from .detection.filters import PitchMasker, filter_balls, filter_players
+from .detection.motion import MotionBallDetector
 from .errors import ProcessingError, SoccerTrackerError, VideoWriteError
-from .tracking.ball_tracker import BallTracker
+from .tracking.ball_tracker import BallTracker, TrajectoryPoint
+from .tracking.flight import FlightLinker
 from .tracking.player_tracker import PlayerTracker
 from .video_io import VideoReader, VideoWriter
 from .visualization import Visualizer
@@ -76,6 +79,15 @@ class Pipeline:
 
             player_tracker = PlayerTracker(cfg.players.tracker, frame_rate=info.fps)
             ball_tracker = BallTracker(cfg.ball.tracker) if ball_detector is not None else None
+            use_motion = ball_detector is not None and cfg.ball.motion.enabled
+            motion_detector = MotionBallDetector(cfg.ball.motion) if use_motion else None
+            flight_linker = FlightLinker(cfg.ball.motion) if use_motion else None
+            # Output is held back this many frames so the ball tracker can fill
+            # in the start of a flight once the flight is confirmed.
+            delay = cfg.ball.motion.backfill_frames if use_motion else 0
+            pending: deque[list] = deque()  # [frame_idx, ts, frame, players, ball]
+            ball_trail: deque[TrajectoryPoint] = deque(maxlen=cfg.ball.tracker.trajectory_length)
+            trail_track: list[Optional[int]] = [None]  # track id the trail belongs to
             visualizer = Visualizer(cfg.visualization)
             needs_mask = cfg.players.filter.use_pitch_mask or (ball_detector is not None and cfg.ball.filter.use_pitch_mask)
             masker = PitchMasker(cfg.pitch_mask) if needs_mask else None
@@ -85,38 +97,66 @@ class Pipeline:
             try:
                 with VideoWriter(out_video, info.fps, (info.width, info.height), cfg.io.fourcc, cfg.io.overwrite) as writer, \
                         TrackCsvWriter(out_csv) as csv_writer:
-                    for frame_idx, ts, frame in reader.frames():
-                        mask = masker.compute(frame) if masker else None
 
-                        raw_p = player_detector.detect(frame)
-                        kept_p = filter_players(raw_p, frame.shape, cfg.players.filter, mask)
-                        players = player_tracker.update(kept_p)
-                        stats.player_detections_raw += len(raw_p)
-                        stats.player_detections_kept += len(kept_p)
+                    def emit(item: list) -> None:
+                        f_idx, f_ts, f_frame, f_players, f_ball = item
+                        if f_ball is not None:
+                            if trail_track[0] != f_ball.track_id:
+                                ball_trail.clear()  # a different ball track: don't join the trails
+                                trail_track[0] = f_ball.track_id
+                            cx, cy = f_ball.center
+                            ball_trail.append(TrajectoryPoint(f_idx, float(cx), float(cy), f_ball.status))
+                        trail = list(ball_trail) if f_ball is not None else ()
+                        writer.write(visualizer.draw(f_frame, f_idx, f_ts, f_players, f_ball, trail))
+                        csv_writer.write_frame(f_idx, f_ts, f_players + ([f_ball] if f_ball is not None else []))
+                        stats.record(f_players, f_ball)
 
-                        ball = None
-                        traj = ()
-                        if ball_detector is not None and ball_tracker is not None:
-                            raw_b = ball_detector.detect(frame)
-                            kept_b = filter_balls(raw_b, cfg.ball.filter, mask)
-                            ball = ball_tracker.update(frame_idx, kept_b, frame.shape)
-                            traj = ball_tracker.trajectory if ball is not None else ()
-                            stats.ball_candidates_raw += len(raw_b)
-                            stats.ball_candidates_kept += len(kept_b)
+                    try:
+                        for frame_idx, ts, frame in reader.frames():
+                            mask = masker.compute(frame) if masker else None
 
-                        writer.write(visualizer.draw(frame, frame_idx, ts, players, ball, traj))
-                        csv_writer.write_frame(frame_idx, ts, players + ([ball] if ball is not None else []))
-                        stats.record(players, ball)
+                            raw_p = player_detector.detect(frame)
+                            kept_p = filter_players(raw_p, frame.shape, cfg.players.filter, mask)
+                            players = player_tracker.update(kept_p)
+                            stats.player_detections_raw += len(raw_p)
+                            stats.player_detections_kept += len(kept_p)
 
-                        if (frame_idx + 1) % cfg.io.log_every == 0:
-                            el = time.perf_counter() - t0
-                            limits = [n for n in (info.frame_count, cfg.io.max_frames) if n]
-                            total = min(limits) if limits else None
-                            log.info(
-                                "frame %d/%s  %.1f FPS  players=%d  ball=%s",
-                                frame_idx + 1, total or "?", (frame_idx + 1) / el, len(players),
-                                ball.status if ball else "lost",
-                            )
+                            ball = None
+                            if ball_detector is not None and ball_tracker is not None:
+                                raw_b = ball_detector.detect(frame)
+                                kept_b = filter_balls(raw_b, cfg.ball.filter, mask)
+                                flights = ()
+                                if motion_detector is not None and flight_linker is not None:
+                                    flights = flight_linker.update(frame_idx, motion_detector.detect(frame))
+                                ball = ball_tracker.update(frame_idx, kept_b, frame.shape, flights)
+                                stats.ball_candidates_raw += len(raw_b)
+                                stats.ball_candidates_kept += len(kept_b)
+
+                            pending.append([frame_idx, ts, frame, players, ball])
+                            if ball_tracker is not None:
+                                fixes = ball_tracker.take_amendments()
+                                if fixes:
+                                    for item in pending:
+                                        old = item[4]
+                                        seen = (old is not None and old.status == "detected"
+                                                and (old.confidence or 0.0) >= cfg.ball.tracker.start_confidence)
+                                        if item[0] in fixes and not seen:  # never overwrite a confident detection
+                                            item[4] = fixes[item[0]]
+                            while len(pending) > delay:
+                                emit(pending.popleft())
+
+                            if (frame_idx + 1) % cfg.io.log_every == 0:
+                                el = time.perf_counter() - t0
+                                limits = [n for n in (info.frame_count, cfg.io.max_frames) if n]
+                                total = min(limits) if limits else None
+                                log.info(
+                                    "frame %d/%s  %.1f FPS  players=%d  ball=%s",
+                                    frame_idx + 1, total or "?", (frame_idx + 1) / el, len(players),
+                                    ball.status if ball else "lost",
+                                )
+                    finally:
+                        while pending:  # also on Ctrl+C, so the partial video is complete
+                            emit(pending.popleft())
             except SoccerTrackerError:
                 raise
             except KeyboardInterrupt:

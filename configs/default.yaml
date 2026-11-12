@@ -70,13 +70,42 @@ ball:
   tracker:                # constant-velocity Kalman single-target tracker
     gate_px: 80
     gate_growth_px: 20
-    max_missed_frames: 15
+    max_gate_px: 160      # cap on the widened gate
+    max_missed_frames: 6  # coast at most ~0.2 s; longer extrapolations drift badly
+    start_confidence: 0.3 # weak detections can extend a track but never start one
+    max_coast_innovation_px: 15  # no predicted ball right after a sudden jump (a kick)
+    flight_anchor_px: 35  # a motion flight must trace back to where the ball was last seen...
+    flight_max_anchor_gap: 10  # ...at most this many frames earlier
+    flight_unanchored_min_length: 0  # 0 = never adopt a flight that does not trace back to the ball
+    flight_continue_px: 20
     min_hits: 2
     reinit_confidence: 0.5
     reinit_after_missed: 3
     process_noise: 4.0
     measurement_noise: 4.0
     trajectory_length: 90
+  motion:                 # ball in flight: motion-blurred, missed by YOLO (detection/motion.py)
+    enabled: true
+    confidence: 0.2
+    diff_threshold: 25    # grey-level change that counts as motion (after camera-motion compensation)
+    min_value: 150        # the ball is bright...
+    max_saturation: 90    # ...and pale
+    min_area_px: 6
+    max_area_px: 400
+    max_side_px: 35
+    max_aspect_ratio: 3.5 # blur stretches the ball into a short streak
+    orb_features: 1500
+    link_min_step_px: 4   # linking blobs into flights (tracking/flight.py)
+    link_max_step_px: 60
+    link_radius_px: 6
+    link_radius_speed_gain: 0.25
+    link_max_misses: 1
+    link_max_chains: 2000
+    flight_min_length: 6  # a flight needs this many points...
+    flight_min_speed_px: 8   # ...this median speed (px/frame)...
+    flight_max_accel_px: 4   # ...and must be smooth: median velocity change at most
+    flight_max_accel_frac: 0.3  # max(this px, this fraction of the speed)
+    backfill_frames: 8    # output is held this many frames to fill in the start of a flight
 
 pitch_mask:
   hsv_lower: [30, 40, 40]

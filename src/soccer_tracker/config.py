@@ -106,13 +106,66 @@ class BallTrackerConfig:
 
     gate_px: float = 80.0  # max distance between prediction and accepted detection
     gate_growth_px: float = 20.0  # gate widens by this much per missed frame
-    max_missed_frames: int = 15  # frames to coast on prediction before dropping
+    max_gate_px: float = 160.0  # ...but never beyond this (stops far-away junk being accepted)
+    max_missed_frames: int = 6  # frames to coast on prediction before dropping
+    start_confidence: float = 0.3  # a new track needs a detection at least this confident
+    # If the last detection landed this far from the prediction, the ball was
+    # probably just kicked and its new velocity is unknown: report it as lost
+    # instead of extrapolating (the track stays alive and can re-acquire).
+    max_coast_innovation_px: float = 15.0
+    # A confirmed flight (motion-based, see tracking/flight.py) is adopted as
+    # the ball when its first velocity, run backwards to the frame the
+    # detector last saw the ball, lands within this distance of the ball...
+    flight_anchor_px: float = 35.0
+    flight_max_anchor_gap: int = 10  # ...seen at most this many frames before the flight starts
+    # Optionally, when no ball has been seen recently, also adopt a flight at
+    # least this long. 0 = off (default): a sprinting player can look like a
+    # slow pass, so a flight must normally be launched from a ball the
+    # detector actually saw.
+    flight_unanchored_min_length: int = 0
+    # A different flight chain this close to where the followed flight should
+    # be is treated as its continuation.
+    flight_continue_px: float = 20.0
     min_hits: int = 2  # detections needed before a track is reported
     reinit_confidence: float = 0.5  # a detection this strong outside the gate restarts the track
     reinit_after_missed: int = 3  # ...but only once the current track has missed this many frames
     process_noise: float = 4.0
     measurement_noise: float = 4.0
     trajectory_length: int = 90
+
+
+@dataclass
+class MotionBallConfig:
+    """Motion-based ball candidates (detection/motion.py).
+
+    Finds the ball in flight, when it is motion-blurred and the appearance
+    detector misses it. Candidates only extend an existing ball track.
+    """
+
+    enabled: bool = True
+    confidence: float = 0.2  # fixed score; keep below ball.tracker.start_confidence
+    diff_threshold: int = 25  # grey-level change that counts as motion
+    min_value: int = 150  # HSV value: the ball is bright...
+    max_saturation: int = 90  # ...and pale
+    min_area_px: int = 6
+    max_area_px: int = 400
+    max_side_px: int = 35
+    max_aspect_ratio: float = 3.5  # blur stretches the ball into a short streak
+    orb_features: int = 1500  # for camera-motion compensation
+    # Linking blobs into flights (tracking/flight.py)
+    link_min_step_px: float = 4.0  # a new chain must move at least this much per frame...
+    link_max_step_px: float = 60.0  # ...and at most this much
+    link_radius_px: float = 6.0  # match radius around the constant-velocity prediction
+    link_radius_speed_gain: float = 0.25  # ...plus this fraction of the current speed
+    link_max_misses: int = 1  # frames a chain may go unmatched
+    link_max_chains: int = 2000  # work bound for busy scenes
+    flight_min_length: int = 6  # points before a chain counts as a ball flight
+    flight_min_speed_px: float = 8.0  # median speed (px/frame); slower things are players
+    flight_max_accel_px: float = 4.0  # median change of velocity per frame; limbs swing, balls do not...
+    flight_max_accel_frac: float = 0.3  # ...or this fraction of the median speed, if larger
+    # The pipeline holds output this many frames so the start of a flight
+    # (before it was confirmed) can be filled in. 0 disables the delay.
+    backfill_frames: int = 8
 
 
 def _default_ball_detector() -> DetectorConfig:
@@ -128,6 +181,7 @@ class BallConfig:
     detector: DetectorConfig = field(default_factory=_default_ball_detector)
     filter: BallFilterConfig = field(default_factory=BallFilterConfig)
     tracker: BallTrackerConfig = field(default_factory=BallTrackerConfig)
+    motion: MotionBallConfig = field(default_factory=MotionBallConfig)
 
 
 @dataclass
@@ -299,6 +353,15 @@ def validate(cfg: AppConfig) -> AppConfig:
     _check(0 <= bt.reinit_confidence <= 1, "ball.tracker.reinit_confidence must be in [0, 1]")
     _check(bt.process_noise > 0 and bt.measurement_noise > 0, "ball.tracker noise values must be > 0")
     _check(bt.trajectory_length >= 2, "ball.tracker.trajectory_length must be >= 2")
+    _check(0 <= bt.start_confidence <= 1, "ball.tracker.start_confidence must be in [0, 1]")
+    _check(bt.max_gate_px > 0, "ball.tracker.max_gate_px must be > 0")
+    bm = cfg.ball.motion
+    _check(0 <= bm.min_area_px <= bm.max_area_px, "ball.motion: need 0 <= min_area_px <= max_area_px")
+    _check(bm.max_aspect_ratio >= 1, "ball.motion.max_aspect_ratio must be >= 1")
+    _check(0 <= bm.confidence <= 1, "ball.motion.confidence must be in [0, 1]")
+    _check(0 <= bm.link_min_step_px <= bm.link_max_step_px, "ball.motion: need 0 <= link_min_step_px <= link_max_step_px")
+    _check(bm.flight_min_length >= 3, "ball.motion.flight_min_length must be >= 3")
+    _check(bm.backfill_frames >= 0, "ball.motion.backfill_frames must be >= 0")
 
     pm = cfg.pitch_mask
     _check(len(pm.hsv_lower) == 3 and len(pm.hsv_upper) == 3, "pitch_mask.hsv_lower/hsv_upper need 3 values (H, S, V)")

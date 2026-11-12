@@ -23,7 +23,9 @@ Built on pretrained models only: Ultralytics YOLO for detection, ByteTrack for p
 tracking, and a Kalman-filter single-target tracker for the ball. No training is required.
 Ball positions that come from the motion model are always marked `predicted` (orange in
 the video, `status=predicted` and an empty confidence in the CSV); they are never
-presented as detections.
+presented as detections. When the ball is struck and YOLO loses the blurred ball, a
+motion-based stage follows it in flight; those positions are observed, so they are
+`detected`, with `class_name` `ball (motion)` and an empty confidence.
 
 ---
 
@@ -96,7 +98,7 @@ expect roughly 1–3 FPS at the default `imgsz: 1280`; see Troubleshooting for s
 | `object_type` | `player` or `ball` |
 | `track_id` | Player: tracker ID (ByteTrack by default). Ball: ball-track segment ID (increments when the ball is re-acquired after being lost) |
 | `class_name` | Detector class (e.g. `person`, `sports ball`, or your model's names) |
-| `confidence` | Detector confidence; **empty** for predicted ball positions |
+| `confidence` | Detector confidence; **empty** for predicted ball positions and for `ball (motion)` rows (no detector score) |
 | `status` | `detected`, or `predicted` (ball position from the motion model while undetected) |
 | `x1,y1,x2,y2` | Box in pixels |
 | `center_x,center_y` | Box centre in pixels |
@@ -227,7 +229,9 @@ Most important knobs:
 | `ball.detector.weights` / `classes` | COCO `sports ball` | Point to soccer-specific weights (see §4) |
 | `ball.detector.tiling.enabled` | false | Helps with tiny balls; costs several extra inferences per frame |
 | `ball.tracker.gate_px` | 80 | Larger for high-resolution or fast-paced footage |
-| `ball.tracker.max_missed_frames` | 15 | How long to show a predicted ball when undetected |
+| `ball.tracker.max_missed_frames` | 6 | How long to show a predicted ball when undetected |
+| `ball.motion.enabled` | true | Follow the ball in flight from motion when YOLO misses it (shots, long passes); `false` = YOLO + Kalman only, about 2x faster |
+| `ball.tracker.flight_anchor_px` | 35 | How closely a flight must trace back to the last seen ball; larger accepts more flights and more false ones |
 | `io.fourcc` | `mp4v` | `avc1` for browser-playable H.264 (if your OpenCV supports it) |
 
 `configs/soccer_finetuned.example.yaml` shows the setup for a soccer-specific model.
@@ -256,6 +260,18 @@ in layers, each replaceable independently:
 3. **Tracking** (`ball.tracker`): picks the candidate consistent with the ball's
    motion, bridges short gaps with predictions (drawn in orange, `status=predicted`
    in the CSV), and re-acquires after long passes.
+4. **Ball in flight** (`ball.motion`): a struck ball is a blurred streak that YOLO
+   rarely detects. The pipeline compensates camera motion (ORB features + RANSAC),
+   finds small bright moving blobs by three-frame differencing, and links them into
+   *flights*: chains that are long, fast and smooth (limbs swing back and forth,
+   players are slower). A flight is used only when the detector has lost the ball and
+   the flight's initial velocity, run backwards, lands on the ball where the detector
+   last saw it, i.e. it was launched from the ball. The first few frames of a flight
+   are confirmed late, so the output is held back `backfill_frames` (8) frames and
+   filled in. A confident detection always wins over a flight, and when a flight
+   ends abruptly (the net, a save) the ball is reported lost rather than extrapolated.
+   On UVY-Track soccer_V04 (the free kick) this tracks the whole shot: 167/168
+   annotated ball frames within 25 px and none wrong, against 153 with YOLO alone.
 
 To substantially improve ball recall you need soccer-specific weights:
 
@@ -309,7 +325,7 @@ pytest -m integration     # real-model tests (needs weights; run the CLI once to
 | Crowd/coaches tracked as players | `players.filter.use_pitch_mask: true`; tune `pitch_mask.hsv_*` if your grass colour differs |
 | Many short tracks / ID switches | Raise `lost_track_buffer`; use a larger model (`yolo11s.pt`); lower `players.detector.confidence` so ByteTrack's second stage has candidates |
 | Ball rarely found | Expected with COCO weights; enable tiling and/or use soccer-specific weights (§4) |
-| Ball jumps to a wrong object | Lower `ball.tracker.gate_px`, raise `reinit_confidence`, enable `ball.filter.use_pitch_mask` |
+| Ball jumps to a wrong object | Lower `ball.tracker.gate_px` / `max_gate_px`, raise `start_confidence` and `reinit_confidence`, enable `ball.filter.use_pitch_mask` |
 | CUDA out of memory | Lower `imgsz`, disable tiling, or use `--device cpu` |
 | `No module named soccer_tracker` | Run `pip install -e .` in the project folder (or `PYTHONPATH=src`) |
 
@@ -322,14 +338,17 @@ pytest -m integration     # real-model tests (needs weights; run the CLI once to
 - Dataset adapters for SportsMOT, UVY-Track and InFactory, and a tool that downloads only selected sequences from a remote ZIP
 - Reproducible experiments: cached detections, three-tracker comparison with HOTA / MOTA / IDF1, ball evaluation, runtime benchmark, plots, SQLite database
 - Separate ball pipeline: detection (optional tiling) → filtering → Kalman tracking with gating, coasting, re-acquisition
+- Ball-in-flight tracking from camera-motion-compensated frame differencing and flight linking, with retroactive fill-in of the flight's first frames
 - Annotated video: per-ID colours, IDs, foot-point trails, ball marker and trail (detected vs. predicted), status overlay
 - Streaming CSV export and JSON run summary
 - Single shared inference pass for players and ball when possible
 - YAML config with strict validation; CLI overrides; clear errors and exit codes
-- 109 automated tests including an end-to-end smoke test without model weights
+- 121 automated tests including an end-to-end smoke test without model weights
 
 **Known limitations**
 - Ball detection with COCO weights is weak on broadcast footage (see §4)
+- The tracker follows the most confident ball; a second real ball in view (a spare ball beside the pitch, as in UVY-Track soccer_V01) can be followed instead of the match ball
+- Motion-based flights need a moving camera to be roughly a pan/zoom; a flight that does not start from a ball the detector saw (e.g. the ball enters the frame mid-flight) is ignored by default
 - ID switches during long occlusions and crowded set pieces; IDs are not kept across camera cuts (no re-identification)
 - ByteTrack reports a new track from its second frame onward, so frame 0 has no player rows
 - `person` includes referees, coaches and ball boys unless filtered or a soccer model is used

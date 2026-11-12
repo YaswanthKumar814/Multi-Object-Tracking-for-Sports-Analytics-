@@ -101,3 +101,39 @@ def test_trajectory_is_bounded():
     for i in range(20):
         t.update(i, ball_at(linear(i)))
     assert len(t.trajectory) == 5 and t.trajectory[-1].frame_idx == 19
+
+
+def test_weak_detection_cannot_start_a_track():
+    t = BallTracker(BallTrackerConfig(min_hits=1, start_confidence=0.3))
+    assert t.update(0, ball_at((100, 100), conf=0.15)) is None
+    assert t.tracks_started == 0
+    assert t.update(1, ball_at((100, 100), conf=0.5)) is not None
+
+
+def test_weak_detection_can_extend_a_track():
+    t = BallTracker(BallTrackerConfig(min_hits=1, start_confidence=0.3))
+    t.update(0, ball_at(linear(0), conf=0.6))
+    out = t.update(1, ball_at(linear(1), conf=0.12))
+    assert out is not None and out.status == DETECTED
+
+
+def test_gate_growth_is_capped():
+    cfg = BallTrackerConfig(min_hits=1, gate_px=40, gate_growth_px=50, max_gate_px=60,
+                            max_missed_frames=20, reinit_confidence=0.99)
+    t = BallTracker(cfg)
+    t.update(0, ball_at((100, 100)))
+    for i in range(1, 6):
+        t.update(i, ball_at())
+    # 5 misses would widen an uncapped gate to 290 px; the cap keeps a far detection out.
+    out = t.update(6, ball_at((300, 100), conf=0.4))
+    assert out is None or out.center != pytest.approx((300, 100), abs=5)
+
+
+def test_no_prediction_right_after_a_kick():
+    cfg = BallTrackerConfig(min_hits=1, gate_px=80, max_coast_innovation_px=15, max_missed_frames=10)
+    t = BallTracker(cfg)
+    for i in range(10):
+        t.update(i, ball_at((200, 200)))  # ball at rest
+    assert t.update(10, ball_at((200, 170))).status == DETECTED  # kicked: 30 px jump
+    assert t.update(11, ball_at()) is None  # velocity unknown -> reported lost, not guessed
+    assert t.update(12, ball_at((200, 120))) is not None  # still re-acquired in the gate
