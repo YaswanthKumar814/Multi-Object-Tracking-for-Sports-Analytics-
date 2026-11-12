@@ -457,7 +457,7 @@ defaults) shows how much of the ranking depends on thresholds:
 <!-- /TABLE:tracking_sportsmot_default -->
 
 Here the three trackers are within 0.8 HOTA points. ByteTrack again has the fewest
-identity switches (43); OC-SORT has the best MOTA (71.2) because it discards every
+identity switches (43); OC-SORT has the best MOTA (71.1) because it discards every
 box below confidence 0.5, which removes many false positives but costs 8 points of
 recall.
 
