@@ -1,0 +1,17 @@
+method,training_setup,HOTA,IDF1,AssA,MOTA,DetA,source,source_table
+FairMOT,train,49.3,53.5,34.7,86.4,70.2,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+GTR,train,54.5,55.8,45.9,67.9,64.8,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+QDTrack,train,60.4,62.3,47.2,90.1,77.5,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+CenterTrack,train,62.7,60.0,48.0,90.8,82.1,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+ByteTrack,train,62.8,69.8,51.2,94.1,77.1,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+BoT-SORT,train,68.7,70.0,55.9,94.5,84.4,Huang et al. (arXiv:2306.13074),Table 2
+TransTrack,train,68.9,71.5,57.5,92.6,82.7,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+OC-SORT,train,71.9,72.2,59.8,94.5,86.4,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+DiffMOT,train,72.1,72.8,60.5,94.5,86.0,Lv et al. (arXiv:2403.02075),Table 2
+Deep-EIoU,train,74.1,75.0,63.1,95.1,87.2,Huang et al. (arXiv:2306.13074),Table 2
+ByteTrack,train+val,64.1,71.4,52.3,95.9,78.5,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+MixSort-Byte,train+val,65.7,74.1,54.8,96.2,78.8,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+OC-SORT,train+val,73.7,74.0,61.5,96.5,88.5,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+MixSort-OC,train+val,74.1,74.4,62.0,96.5,88.5,Cui et al. ICCV 2023 (arXiv:2304.05170),Table 3
+DiffMOT,train+val,76.2,76.1,65.1,97.1,89.3,Lv et al. (arXiv:2403.02075),Table 2
+Deep-EIoU,train+val,77.2,79.8,67.7,96.3,88.2,Huang et al. (arXiv:2306.13074),Table 2

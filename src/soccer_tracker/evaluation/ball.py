@@ -10,7 +10,10 @@ Kalman motion model filled in for a missing detection). Predictions are scored
 exactly like detections but are always counted and reported separately, so a
 predicted position is never passed off as a detection.
 
-Only frames whose ball status is known ("labelled frames") are scored.
+Only frames whose ball status is known ("labelled frames") are scored. Which
+frames those are is decided by the dataset adapter: every frame for InFactory,
+which labels "ball not visible" explicitly; only frames with a valid ball box
+for UVY-Track, which never marks the ball absent (datasets/uvy_track.py).
 
 Matching criteria (both reported):
 

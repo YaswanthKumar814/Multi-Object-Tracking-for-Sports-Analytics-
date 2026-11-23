@@ -68,5 +68,10 @@
     "file": "13_model_comparison.png",
     "description": "YOLOv8n vs YOLO11n",
     "status": "ok"
+  },
+  {
+    "file": "14_sota_comparison.png",
+    "description": "Comparison with published SportsMOT state of the art",
+    "status": "ok"
   }
 ]

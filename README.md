@@ -8,6 +8,10 @@ against YOLO11n + SORT and YOLO11n + OC-SORT on three public datasets
 |---|---|
 | [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md) | Full report: method, datasets, baseline comparison, metrics, plots, limitations |
 | [DATASETS.md](DATASETS.md) | Dataset sources, formats, the exact subsets used, download commands |
+| [CONTRIBUTIONS.md](CONTRIBUTIONS.md) | Who did what: component owners, evidence commits, viva accountability |
+| [poster.pptx](poster.pptx), [poster.pdf](poster.pdf) | Single-page project poster (48 x 36 in), rebuilt from the results with `python scripts/make_poster.py` |
+| [Project_Presentation.pptx](Project_Presentation.pptx) | Presentation on the institution template, with speaker notes; rebuilt with `python scripts/make_template_presentation.py` |
+| [docs/report/](docs/report/) | Project report in two LaTeX formats with the same content: `report_ieee.tex` (IEEE, two columns) and `report_single_column.tex`, each with an Overleaf zip; rebuilt with `python scripts/make_reports.py` |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
 | [presentation.pptx](presentation.pptx), [docs/PRESENTATION_NOTES.md](docs/PRESENTATION_NOTES.md) | Slides and speaker notes |
 | [results/](results/) | Metrics (CSV/JSON), plots (PNG), SQLite database, demo outputs |
@@ -187,7 +191,13 @@ are shown only for completeness:
 <!-- /TABLE:tracking_uvy_partial -->
 
 **Ball: detection only vs Kalman tracker vs Kalman + motion flights** (13 sequences of UVY-Track and InFactory;
-"dist" = centre within one ball diameter of the ground truth):
+"dist" = centre within one ball diameter of the ground truth). On UVY-Track only frames with a
+valid ball box are scored: the dataset never marks the ball absent, and its visibility-0 ball
+rows are carried-forward boxes, not ball positions (see [DATASETS.md](DATASETS.md)). False alarms
+on ball-free frames are therefore measured on InFactory only. These ball results were
+regenerated on Windows (Intel Core 7 150U, Ultralytics 8.4.182); the player results come from
+the Apple M1 run. On UVY-Track the two detector builds give somewhat different ball candidates,
+so ball numbers differ from earlier versions of this table for that reason as well.
 
 <!-- TABLE:ball_summary -->
 | Data | Method | Visible-ball frames | P (dist) | R (dist) | F1 (dist) | P (IoU) | R (IoU) | F1 (IoU) | AP@0.5 | Coverage | Centre error of correct outputs (px) |
@@ -195,26 +205,82 @@ are shown only for completeness:
 | InFactory | Detection only (YOLO11n) | 884 | 74.51 | 34.39 | 47.06 | 66.91 | 30.88 | 42.26 | 25.95 | 28.14 | 2.11 |
 | InFactory | Kalman tracker, detected positions only | 884 | 92.48 | 27.83 | 42.78 | 80.08 | 24.09 | 37.04 | n/a | 18.34 | 3.49 |
 | InFactory | Kalman tracker: detected + predicted (YOLO only) | 884 | 82.53 | 36.88 | 50.98 | 63.54 | 28.39 | 39.25 | n/a | 27.24 | 4.27 |
-| InFactory | Kalman tracker + motion flights (proposed) | 884 | 82.53 | 36.88 | 50.98 | 63.54 | 28.39 | 39.25 | n/a | 27.24 | 4.27 |
-| UVY-Track | Detection only (YOLO11n) | 1518 | 62.56 | 35.11 | 44.98 | 24.77 | 13.90 | 17.81 | 12.03 | 54.30 | 1.85 |
-| UVY-Track | Kalman tracker, detected positions only | 1518 | 67.03 | 28.13 | 39.63 | 34.22 | 14.36 | 20.23 | n/a | 40.60 | 1.51 |
-| UVY-Track | Kalman tracker: detected + predicted (YOLO only) | 1518 | 65.60 | 35.18 | 45.80 | 27.76 | 14.89 | 19.38 | n/a | 51.88 | 1.83 |
-| UVY-Track | Kalman tracker + motion flights (proposed) | 1518 | 64.17 | 36.10 | 46.21 | 28.10 | 15.81 | 20.24 | n/a | 54.43 | 1.83 |
-| All ball sequences | Detection only (YOLO11n) | 2402 | 66.43 | 34.85 | 45.71 | 38.41 | 20.15 | 26.43 | 16.31 | 41.74 | 1.94 |
-| All ball sequences | Kalman tracker, detected positions only | 2402 | 74.53 | 28.02 | 40.73 | 47.73 | 17.94 | 26.08 | n/a | 29.91 | 2.23 |
-| All ball sequences | Kalman tracker: detected + predicted (YOLO only) | 2402 | 71.13 | 35.80 | 47.63 | 39.45 | 19.86 | 26.42 | n/a | 40.05 | 2.76 |
-| All ball sequences | Kalman tracker + motion flights (proposed) | 2402 | 69.98 | 36.39 | 47.88 | 39.31 | 20.44 | 26.90 | n/a | 41.37 | 2.74 |
+| InFactory | Kalman tracker + motion flights (proposed) | 884 | 82.53 | 36.88 | 50.98 | 63.29 | 28.28 | 39.09 | n/a | 27.24 | 4.23 |
+| UVY-Track | Detection only (YOLO11n) | 1033 | 64.32 | 48.69 | 55.43 | 27.37 | 20.72 | 23.58 | 17.82 | 75.70 | 1.61 |
+| UVY-Track | Kalman tracker, detected positions only | 1033 | 58.48 | 34.37 | 43.29 | 36.08 | 21.20 | 26.71 | n/a | 58.76 | 1.30 |
+| UVY-Track | Kalman tracker: detected + predicted (YOLO only) | 1033 | 58.23 | 42.79 | 49.33 | 30.70 | 22.56 | 26.00 | n/a | 73.47 | 1.61 |
+| UVY-Track | Kalman tracker + motion flights (proposed) | 1033 | 58.99 | 44.14 | 50.50 | 31.95 | 23.91 | 27.35 | n/a | 74.83 | 1.61 |
+| All ball sequences | Detection only (YOLO11n) | 1917 | 67.81 | 42.10 | 51.95 | 40.92 | 25.40 | 31.35 | 20.45 | 47.93 | 1.80 |
+| All ball sequences | Kalman tracker, detected positions only | 1917 | 68.84 | 31.35 | 43.08 | 49.48 | 22.54 | 30.97 | n/a | 35.16 | 2.19 |
+| All ball sequences | Kalman tracker: detected + predicted (YOLO only) | 1917 | 66.55 | 40.06 | 50.02 | 41.94 | 25.25 | 31.52 | n/a | 46.48 | 2.74 |
+| All ball sequences | Kalman tracker + motion flights (proposed) | 1917 | 66.95 | 40.79 | 50.70 | 42.55 | 25.93 | 32.22 | n/a | 47.04 | 2.70 |
 <!-- /TABLE:ball_summary -->
 
 In short: ByteTrack (proposed) gives the fewest identity switches and the highest recall
 on both tracking datasets and the best OWTA on UVY-Track, but tuned SORT has the higher
-HOTA / MOTA / IDF1 on SportsMOT. The ball tracker (Kalman + motion flights) raises ball
-precision, recall, F1 and track continuity over detection alone; motion flights follow a
-struck ball the detector loses (UVY-Track `soccer_V04`: recall 91.1% to 99.4%) and change
-nothing on clips without such a shot. The generic COCO detector is the main limit on
+HOTA / MOTA / IDF1 on SportsMOT. For the ball, the Kalman tracker beats detection alone on
+the held-out InFactory clips (F1 51.0 vs 47.1, precision 82.5 vs 74.5) but not on UVY-Track
+(F1 50.5 vs 55.4), so pooled over all 13 sequences detection alone has the higher F1
+(52.0 vs 50.7); the tracker's clearest gain is continuity (161 correct segments merge into
+42). Motion flights follow a struck ball the detector loses (UVY-Track `soccer_V04`: recall
+91.1% to 99.4% at 100% precision) and change nothing on the other 12 sequences. The generic COCO detector is the main limit on
 accuracy and takes most of the time (5.7 FPS on an Apple M1 CPU, 64% detector, 30% ball
 motion stage). Full results,
 plots and discussion: [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md).
+
+### Comparison with the state of the art
+
+Published results on the SportsMOT **test** set, copied from the source papers
+([results/literature/](results/literature/README.md) lists every source table), next to our
+three trackers on our SportsMOT subset. **The protocols differ**: the published methods train
+their detector on SportsMOT and are scored on the full test set; we use a COCO-pretrained
+YOLO11n that has never seen SportsMOT and score 3 football validation sequences. The table
+places the project in context; it is not a leaderboard entry.
+
+<!-- TABLE:sota_comparison -->
+| Method | Training data | Evaluated on | Detector | HOTA | DetA | AssA | MOTA | IDF1 | Source |
+|---|---|---|---|---|---|---|---|---|---|
+| FairMOT | train | SportsMOT test set | trained on SportsMOT | 49.30 | 70.20 | 34.70 | 86.40 | 53.50 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| GTR | train | SportsMOT test set | trained on SportsMOT | 54.50 | 64.80 | 45.90 | 67.90 | 55.80 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| QDTrack | train | SportsMOT test set | trained on SportsMOT | 60.40 | 77.50 | 47.20 | 90.10 | 62.30 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| CenterTrack | train | SportsMOT test set | trained on SportsMOT | 62.70 | 82.10 | 48.00 | 90.80 | 60.00 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| ByteTrack | train | SportsMOT test set | trained on SportsMOT | 62.80 | 77.10 | 51.20 | 94.10 | 69.80 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| ByteTrack | train+val | SportsMOT test set | trained on SportsMOT | 64.10 | 78.50 | 52.30 | 95.90 | 71.40 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| MixSort-Byte | train+val | SportsMOT test set | trained on SportsMOT | 65.70 | 78.80 | 54.80 | 96.20 | 74.10 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| BoT-SORT | train | SportsMOT test set | trained on SportsMOT | 68.70 | 84.40 | 55.90 | 94.50 | 70.00 | Huang et al. (arXiv:2306.13074), Table 2 |
+| TransTrack | train | SportsMOT test set | trained on SportsMOT | 68.90 | 82.70 | 57.50 | 92.60 | 71.50 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| OC-SORT | train | SportsMOT test set | trained on SportsMOT | 71.90 | 86.40 | 59.80 | 94.50 | 72.20 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| DiffMOT | train | SportsMOT test set | trained on SportsMOT | 72.10 | 86.00 | 60.50 | 94.50 | 72.80 | Lv et al. (arXiv:2403.02075), Table 2 |
+| OC-SORT | train+val | SportsMOT test set | trained on SportsMOT | 73.70 | 88.50 | 61.50 | 96.50 | 74.00 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| Deep-EIoU | train | SportsMOT test set | trained on SportsMOT | 74.10 | 87.20 | 63.10 | 95.10 | 75.00 | Huang et al. (arXiv:2306.13074), Table 2 |
+| MixSort-OC | train+val | SportsMOT test set | trained on SportsMOT | 74.10 | 88.50 | 62.00 | 96.50 | 74.40 | Cui et al. ICCV 2023 (arXiv:2304.05170), Table 3 |
+| DiffMOT | train+val | SportsMOT test set | trained on SportsMOT | 76.20 | 89.30 | 65.10 | 97.10 | 76.10 | Lv et al. (arXiv:2403.02075), Table 2 |
+| Deep-EIoU | train+val | SportsMOT test set | trained on SportsMOT | 77.20 | 88.20 | 67.70 | 96.30 | 79.80 | Huang et al. (arXiv:2306.13074), Table 2 |
+| **Ours: YOLO11n + SORT** | COCO weights; thresholds chosen on 1 val. sequence | 3 football val. sequences | COCO-pretrained | 65.90 | 64.80 | 67.00 | 64.90 | 70.60 | this project |
+| **Ours: YOLO11n + OC-SORT** | COCO weights; thresholds chosen on 1 val. sequence | 3 football val. sequences | COCO-pretrained | 59.30 | 60.60 | 58.00 | 55.30 | 61.20 | this project |
+| **Ours: YOLO11n + ByteTrack (proposed)** | COCO weights; thresholds chosen on 1 val. sequence | 3 football val. sequences | COCO-pretrained | 62.60 | 59.40 | 66.10 | 52.60 | 66.80 | this project |
+<!-- /TABLE:sota_comparison -->
+
+![Comparison with published SportsMOT results](results/plots/14_sota_comparison.png)
+
+What the comparison shows:
+
+- **The gap to the state of the art is in detection, not association.** The best published
+  result (Deep-EIoU, train+val) reaches HOTA 77.2 with DetA 88.2 and AssA 67.7. Our ByteTrack
+  reaches HOTA 62.6 with DetA 59.4 but AssA 66.1: association is within 1.6 points, detection
+  is 28.8 points lower. A detector trained on SportsMOT finds only the athletes the benchmark
+  annotates; the generic COCO `person` detector also finds referees, coaches and staff, which
+  are scored as false positives.
+- **Same HOTA as the published ByteTrack, for opposite reasons.** Published ByteTrack (train):
+  HOTA 62.8, DetA 77.1, AssA 51.2. Ours: HOTA 62.6, DetA 59.4, AssA 66.1. The higher AssA
+  should not be read as a better tracker: 3 football sequences are not the full multi-sport
+  test set.
+- **The tracker ranking depends on the detector.** In the published results OC-SORT is far
+  ahead of ByteTrack (71.9 vs 62.8); with our detector ByteTrack is ahead of OC-SORT
+  (62.6 vs 59.3). This is consistent with OC-SORT using only confident detections, which
+  pays off with a strong detector and costs recall with a weak one.
+- **Consequence for this project:** the most effective improvement is a detector trained on
+  soccer/SportsMOT data, not a different association algorithm.
 
 ## 3. Configuration
 

@@ -172,6 +172,7 @@ def run_ball_experiments(manifest: Manifest) -> None:
     per_seq: list[dict] = []
     raw: dict[tuple[str, str], list[dict]] = {}  # (dataset, method) -> unrounded per-sequence results
     ap_inputs: dict[str, list] = {}
+    scoring: dict[str, dict] = {}  # which frames each sequence scores for the ball (UVY-Track: see uvy_track.py)
 
     for seq in manifest.ball_sequences():
         cache = get_detections(seq, cfg, manifest.results_dir, tag, compute=False)
@@ -180,6 +181,8 @@ def run_ball_experiments(manifest: Manifest) -> None:
             continue
         gt = seq.ball_gt()
         labelled = seq.ball_labelled_frames()
+        if hasattr(seq, "ball_scoring_summary"):
+            scoring[f"{seq.info.dataset}/{seq.info.name}"] = seq.ball_scoring_summary()
         gt_ids = seq.ball_track_ids() if seq.has_ball_ids else None
         outputs, candidates, tracker_ms = run_ball_methods(cache, seq, cfg)
         tracker_ms["kalman_detected"] = tracker_ms["kalman"]
@@ -260,6 +263,11 @@ def run_ball_experiments(manifest: Manifest) -> None:
         "criteria": {"iou": "IoU >= 0.5 with a ground-truth ball box",
                      "dist": "centre within one ball diameter (max(gt w, gt h)) of the ground-truth centre"},
         "identity_metrics": "id_switches reported only for UVY-Track (persistent ball ids); never for InFactory",
+        "scored_frames": ("InFactory: every frame (visible or explicitly 'not visible'). UVY-Track: only frames "
+                          "with a ball row of visibility > 0; UVY-Track never marks the ball absent, and its "
+                          "visibility-0 rows are carried-forward boxes, so those frames are left out. False alarms "
+                          "on ball-free frames are therefore measured on InFactory only."),
+        "uvy_ball_scoring": scoring,
         "detector": tag, "ball_tracker_config": cfg.ball.tracker.__dict__,
         "ball_motion_config": cfg.ball.motion.__dict__, "ball_filter_config": cfg.ball.filter.__dict__,
         "ball_detector_confidence": cfg.ball.detector.confidence,

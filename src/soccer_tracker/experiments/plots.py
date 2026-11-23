@@ -618,6 +618,96 @@ def plot_architecture(manifest: Manifest, out: Path) -> None:
     _save(fig, out)
 
 
+
+def published_sportsmot(manifest: Manifest) -> list[dict]:
+    """Published SportsMOT test results (results/literature/), as printed in the source papers."""
+    return read_csv(manifest.results_dir / "literature" / "sportsmot_test_published.csv")
+
+
+def plot_sota_comparison(manifest: Manifest, out: Path, scale: float = 1.0) -> None:
+    """Our trackers on our SportsMOT subset next to published SportsMOT test results.
+
+    Left: HOTA ranking. Right: DetA against AssA with iso-HOTA curves
+    (HOTA ~ sqrt(DetA * AssA)), which shows *where* the gap to the state of
+    the art lies. The protocols differ (see results/literature/README.md), so
+    our points are drawn in a different marker and labelled as such.
+    """
+    plt = _plt()
+    pub = published_sportsmot(manifest)
+    rows = _summary(manifest)
+    ours = [(SHORT_LABELS[a], _row(rows, "SportsMOT (test)", a), TRACKER_COLORS[a]) for a in ALGORITHMS]
+
+    # scale < 1 draws a smaller figure with the same font sizes, i.e. relatively larger text (for the poster)
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15.5 * scale, 6.4 * scale), gridspec_kw={"width_ratios": [1.05, 1]})
+
+    entries = [(f"{r['method']} ({r['training_setup']})", r["HOTA"], BASELINE_GRAY if r["training_setup"] == "train"
+                else "#5b5a55", False) for r in pub]
+    entries += [(f"Ours: YOLO11n + {name}", r["HOTA"], color, True) for name, r, color in ours]
+    entries.sort(key=lambda e: e[1])
+    names = [e[0] for e in entries]
+    vals = [e[1] for e in entries]
+    bars = ax1.barh(names, vals, 0.62, color=[e[2] for e in entries], linewidth=0)
+    for b, e in zip(bars, entries):
+        if e[3]:
+            b.set_hatch("///")
+            b.set_edgecolor(SURFACE)
+        ax1.text(e[1] + 0.6, b.get_y() + b.get_height() / 2, f"{e[1]:.1f}", va="center", fontsize=8.5,
+                 fontweight="bold" if e[3] else "normal")
+    for lbl, e in zip(ax1.get_yticklabels(), entries):
+        if e[3]:
+            lbl.set_fontweight("bold")
+    ax1.set_xlim(0, 88)
+    ax1.set_xlabel("HOTA (%), higher is better")
+    ax1.set_ylabel("Method (training data of its detector)")
+    ax1.grid(axis="y", visible=False)
+    ax1.grid(axis="x", visible=True)
+    ax1.tick_params(axis="y", labelsize=8.5, length=0)
+    ax1.set_title("HOTA: published SportsMOT test results vs ours")
+
+    a = np.linspace(30, 75, 200)  # AssA axis range
+    for h in (50, 60, 70, 80):
+        d = h * h / a
+        keep = (d >= 30) & (d <= 100)
+        ax2.plot(d[keep], a[keep], color=GRID, linewidth=1.0, zorder=1)
+        # label where the curve leaves the top of the plot (AssA = 75)
+        ax2.text(h * h / 74.0, 74.0, f"HOTA {h}", fontsize=7.5, color=INK2, ha="left", va="top")
+    # Label the published points that are not in the crowded top-right cluster, plus its extremes.
+    offsets = {("Deep-EIoU", "train+val"): (-8, 6), ("DiffMOT", "train+val"): (6, -2),
+               ("OC-SORT", "train"): (6, -9), ("TransTrack", "train"): (-58, 2), ("BoT-SORT", "train"): (5, -8),
+               ("ByteTrack", "train"): (-50, -8), ("ByteTrack", "train+val"): (5, -6),
+               ("MixSort-Byte", "train+val"): (-70, 2), ("CenterTrack", "train"): (5, -9),
+               ("QDTrack", "train"): (-44, -3), ("GTR", "train"): (5, -3), ("FairMOT", "train"): (5, -3)}
+    for r in pub:
+        tv = r["training_setup"] == "train"
+        ax2.scatter(r["DetA"], r["AssA"], s=40, marker="o", facecolors=BASELINE_GRAY if tv else "#5b5a55",
+                    edgecolors=SURFACE, linewidths=0.8, zorder=3)
+        off = offsets.get((r["method"], r["training_setup"]))
+        if off is not None:
+            ax2.annotate(f"{r['method']}{'' if tv else '*'}", (r["DetA"], r["AssA"]), textcoords="offset points",
+                         xytext=off, fontsize=7.5, color=INK2)
+    for name, r, color in ours:
+        ax2.scatter(r["DetA"], r["AssA"], s=120, marker="D", color=color, edgecolors=INK, linewidths=0.8, zorder=4,
+                    label=f"Ours: YOLO11n + {name} (HOTA {r['HOTA']:.1f})")
+    ax2.scatter([], [], s=40, marker="o", color=BASELINE_GRAY, label="Published, detector trained on SportsMOT train")
+    ax2.scatter([], [], s=40, marker="o", color="#5b5a55", label="Published, trained on train+val (marked *)")
+    ax2.set_xlim(30, 100)
+    ax2.set_ylim(30, 75)
+    ax2.set_xlabel("DetA (%): detection accuracy")
+    ax2.set_ylabel("AssA (%): association accuracy")
+    ax2.grid(axis="x", visible=True)
+    ax2.set_title("Where the gap is: detection (DetA), not association (AssA)")
+    ax2.legend(loc="upper center", bbox_to_anchor=(0.5, -0.12), ncol=2, fontsize=8)
+    ax2.text(0.99, 0.02, "Unlabelled grey points in the top-right cluster: DiffMOT, Deep-EIoU,\n"
+             "OC-SORT* and MixSort-OC* (see the table for their values)", transform=ax2.transAxes,
+             ha="right", va="bottom", fontsize=7, color=INK2)
+
+    fig.suptitle("Comparison with the state of the art on SportsMOT. Published: full test set, detectors trained on "
+                 "SportsMOT. Ours: 3 football validation sequences, COCO-pretrained YOLO11n (not directly comparable)",
+                 fontsize=10.5, fontweight="bold", y=1.01)
+    fig.tight_layout()
+    _save(fig, out)
+
+
 PLOTS: list[tuple[str, Callable[[Manifest, Path], None], str]] = [
     ("00_architecture.png", plot_architecture, "System architecture diagram"),
     ("01_hota_mota_idf1.png", plot_hota_mota_idf1, "HOTA, MOTA and IDF1 for SORT, OC-SORT and ByteTrack"),
@@ -633,6 +723,7 @@ PLOTS: list[tuple[str, Callable[[Manifest, Path], None], str]] = [
     ("11_per_sequence_hota.png", plot_per_sequence_hota, "HOTA per test sequence"),
     ("12_tuning_sensitivity.png", plot_tuning, "Hyper-parameter sensitivity on the dev sequence"),
     ("13_model_comparison.png", plot_model_comparison, "YOLOv8n vs YOLO11n"),
+    ("14_sota_comparison.png", plot_sota_comparison, "Comparison with published SportsMOT state of the art"),
 ]
 
 

@@ -215,6 +215,21 @@ def build_tables(manifest) -> dict[str, str]:
                  r["detector_ms_per_frame"]] for r in read_csv(m / "model_comparison.csv")]
         t["model_comparison"] = md(["Model", "Target", "Dataset", "Frames", "Precision", "Recall", "F1", "AP@0.5",
                                     "Detector (ms / frame)"], rows)
+
+    lit = manifest.results_dir / "literature" / "sportsmot_test_published.csv"
+    if lit.is_file() and (m / "player_tracking_summary.csv").is_file():
+        summary = read_csv(m / "player_tracking_summary.csv")
+        rows = [[r["method"], r["training_setup"], "SportsMOT test set", "trained on SportsMOT",
+                 r["HOTA"], r["DetA"], r["AssA"], r["MOTA"], r["IDF1"], f"{r['source']}, {r['source_table']}"]
+                for r in sorted(read_csv(lit), key=lambda r: r["HOTA"])]
+        for a in ALGORITHMS:
+            r = next(x for x in summary if x["group"] == "SportsMOT (test)" and x["tracker"] == a
+                     and x["param_set"] == "dev-tuned")
+            rows.append([f"**Ours: {TRACKER_LABELS[a]}**", "COCO weights; thresholds chosen on 1 val. sequence", "3 football val. sequences",
+                         "COCO-pretrained", round(r["HOTA"], 1), round(r["DetA"], 1), round(r["AssA"], 1),
+                         round(r["MOTA"], 1), round(r["IDF1"], 1), "this project"])
+        t["sota_comparison"] = md(["Method", "Training data", "Evaluated on", "Detector", "HOTA", "DetA", "AssA",
+                                   "MOTA", "IDF1", "Source"], rows)
     return t
 
 

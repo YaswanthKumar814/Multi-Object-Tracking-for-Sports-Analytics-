@@ -70,8 +70,10 @@ def uvy_root(tmp_path):
                   f"{f},3,100,20,10,30,1,4,1.0",            # referee
                   f"{f},4,0,0,80,40,1,3,1.0",               # goal (ignored)
                   f"{f},-1,5,5,5,5,1,1,1.0"]                # leftover row with a negative id
-        if f != 6:
-            lines.append(f"{f},9,{40 + 2 * f},50,6,6,1,2,1.0")  # ball, not visible in frame 6
+        if f == 8:
+            lines.append(f"{f},9,200,150,6,6,1,2,0.0")  # visibility 0: a carried-forward box, not the ball
+        elif f != 6:
+            lines.append(f"{f},9,{40 + 2 * f},50,6,6,1,2,1.0")  # ball; frame 6 has no ball row
     (seq / "gt" / "gt.txt").write_text("\n".join(lines) + "\n")
     (seq / "video_info.txt").write_text("seqname=wrong_name\nFPS=30\n")
     return tmp_path
@@ -91,16 +93,33 @@ def test_uvy_merges_person_classes_and_renumbers_frames(uvy_root):
 def test_uvy_ball_boxes_ids_and_labelled_frames(uvy_root):
     seq = UVYTrackSequence(uvy_root, "soccer_V99")
     balls = seq.ball_gt()
-    assert sorted(balls) == [1, 2, 3, 5, 6]  # source frame 6 (ball hidden) is evaluated frame 4
+    # source frame 6 has no ball row (evaluated frame 4); source frame 8 has a visibility-0 row (frame 6)
+    assert sorted(balls) == [1, 2, 3, 5]
     np.testing.assert_allclose(balls[1], [[46, 50, 52, 56]])  # xywh (46, 50, 6, 6) -> xyxy
     assert seq.ball_track_ids() == {f: 9 for f in balls}
-    assert seq.ball_labelled_frames() == {1, 2, 3, 4, 5, 6}
     assert seq.has_ball_ids and seq.has_ball_boxes and seq.has_player_ids
+
+
+def test_uvy_scores_the_ball_only_where_a_valid_ball_row_exists(uvy_root):
+    """UVY-Track never marks the ball absent: unlabelled and visibility-0 frames are unknown, not negatives."""
+    from soccer_tracker.evaluation import BallOutput, evaluate_ball
+
+    seq = UVYTrackSequence(uvy_root, "soccer_V99")
+    assert seq.ball_labelled_frames() == {1, 2, 3, 5}
+    assert seq.ball_scoring_summary() == {"frames_evaluated": 6, "frames_scored": 4,
+                                          "frames_ball_row_visibility_0": 1, "frames_without_ball_row": 1}
+    # A tracker that follows the real ball through the unlabelled frame 4 and frame 6 is not
+    # charged with false positives there.
+    gt = seq.ball_gt()
+    outputs = {f: BallOutput(np.array([40 + 2 * (f + 2) - 0.0, 50, 46 + 2 * (f + 2), 56], float)) for f in range(1, 7)}
+    m = evaluate_ball(gt, outputs, seq.info.num_frames, seq.ball_labelled_frames())
+    assert (m["tp_dist"], m["fp_dist"], m["fn_dist"]) == (4, 0, 0)
+    assert m["frames_labelled"] == 4
 
 
 def test_uvy_explicit_range_and_errors(uvy_root):
     seq = UVYTrackSequence(uvy_root, "soccer_V99", first_frame=5, last_frame=7)
-    assert seq.info.num_frames == 3 and sorted(seq.ball_gt()) == [1, 3]
+    assert seq.info.num_frames == 3 and sorted(seq.ball_gt()) == [1, 3]  # source frames 5 and 7
     assert len(list(seq.frames())) == 3
     with pytest.raises(DatasetError):
         UVYTrackSequence(uvy_root, "soccer_V00")

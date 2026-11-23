@@ -115,14 +115,37 @@ Findings from inspecting the files, and how the adapter handles them:
 * The ball boxes are loose: about twice the size of the detector's boxes
   (20x26 px against 12x11 px on soccer_V03), so IoU >= 0.5 is rarely reached even
   by a perfectly centred detection. A centre-distance criterion is used as well.
+* **Ball rows with `visibility = 0` are not ball positions.** On soccer_V03
+  (frames 285 and 367, for example) such a box sits on empty grass with the
+  size of the previous keyframe while the ball is in a player's hands or at his
+  feet: the annotation tool carried the box forward. They are 256 of 750 ball
+  rows in soccer_V01 and 229 of 600 in soccer_V03 (none in soccer_V04).
+* **The ball is never marked absent.** Frames without a ball row are not
+  "no ball" frames: in soccer_V04 the ball is unlabelled while in flight
+  (frames 156-166, between two labelled points of the same arc), in frame 126,
+  and after the goal (from frame 181), although it is visible.
+* Therefore a frame is **scored for the ball only if it has a ball row with
+  visibility > 0** (soccer_V04: 168 of 219 frames, soccer_V01: 494 of 750,
+  soccer_V03: 371 of 600). UVY-Track then measures ball recall and
+  wrong-position errors; false alarms on frames without a ball are measured on
+  InFactory, which labels those frames explicitly. The rule is implemented in
+  `UVYTrackSequence.ball_labelled_frames()` and recorded per sequence in
+  `results/metrics/ball.json` (`uvy_ball_scoring`). On identical detections it
+  raises ball F1 on UVY-Track by about 10 points for every method (detection
+  only 44.5 to 55.4, Kalman 39.5 to 49.3, Kalman + motion flights 39.9 to 50.5)
+  and does not change their ranking.
+* Person rows with `visibility = 0` are mixed: some are genuinely occluded
+  people, but in soccer_V01 the boxes of four people stay frozen in place for
+  about 230 frames while the camera moves. Person rows are still scored as
+  given; this is a known limitation of the UVY-Track player results.
 
 **Subset.** No parameter is tuned on UVY-Track; all three sequences are test data.
 
 | Sequence | Frames evaluated | Resolution | Person tracks | Visible-ball frames |
 |---|---|---|---|---|
 | `soccer_V04` | 1-219 (all annotated frames) | 1280x720 | 19 | 168 |
-| `soccer_V01` | 1-750 of 1,509 | 636x360 | 6 | 750 |
-| `soccer_V03` | 82-681 of the annotated 82-987 | 1280x720 | 5 | 600 |
+| `soccer_V01` | 1-750 of 1,509 | 636x360 | 6 | 494 |
+| `soccer_V03` | 82-681 of the annotated 82-987 | 1280x720 | 5 | 371 |
 
 `soccer_V02` was downloaded but not evaluated, to keep CPU time bounded (its
 ball is annotated in only 116 frames).

@@ -22,8 +22,8 @@ Same order as docs/latex/FINAL_REPORT.tex. Tables have the paper's columns and r
 | SportsMOT | v_G-vNjfx1GGc_c008 | test | 480 | 20 | – |
 | SportsMOT | v_i2_L4qquVg0_c007 | test | 451 | 21 | – |
 | UVY-Track | soccer_V04 | test | 219 | 19 | 168 |
-| UVY-Track | soccer_V01 | test | 750 | 6 | 750 |
-| UVY-Track | soccer_V03 | test | 600 | 5 | 600 |
+| UVY-Track | soccer_V01 | test | 750 | 6 | 494 |
+| UVY-Track | soccer_V03 | test | 600 | 5 | 371 |
 | InFactory | 10 clips | test | 1,450 | – | 884 |
 
 ## Table III. Tracker parameters (n/a: parameter not used by the tracker)
@@ -108,18 +108,18 @@ Dev sequence: SportsMOT/v_2QhNRucNC7E_c017. Selected = best HOTA (star in the fi
 
 | Data | Method | Prec. (dist) | Rec. (dist) | F1 (dist) | Prec. (IoU) | Rec. (IoU) | F1 (IoU) | AP@0.5 | Cover. | Frames det. | Frames pred. | Frames none | Correct segments | Mean seg. len. |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| UVY-Track | Detection only | 62.6 | 35.1 | 45.0 | 24.8 | 13.9 | 17.8 | 12.0 | 54.3 | 852 | 0 | 717 | 102 | 5.2 |
-| UVY-Track | Kalman, detected only | 67.0 | 28.1 | 39.6 | 34.2 | 14.4 | 20.2 | – | 40.6 | 637 | 0 | 932 | 43 | 9.9 |
-| UVY-Track | Kalman (YOLO only) | 65.6 | 35.2 | 45.8 | 27.8 | 14.9 | 19.4 | – | 51.9 | 637 | 177 | 755 | 10 | 53.4 |
-| UVY-Track | Kalman + motion (proposed) | 64.2 | 36.1 | 46.2 | 28.1 | 15.8 | 20.2 | – | 54.4 | 672 | 182 | 715 | 11 | 49.8 |
+| UVY-Track | Detection only | 64.3 | 48.7 | 55.4 | 27.4 | 20.7 | 23.6 | 17.8 | 75.7 | 782 | 0 | 251 | 88 | 5.7 |
+| UVY-Track | Kalman, detected only | 58.5 | 34.4 | 43.3 | 36.1 | 21.2 | 26.7 | – | 58.8 | 607 | 0 | 426 | 32 | 11.1 |
+| UVY-Track | Kalman (YOLO only) | 58.2 | 42.8 | 49.3 | 30.7 | 22.6 | 26.0 | – | 73.5 | 607 | 152 | 274 | 8 | 55.2 |
+| UVY-Track | Kalman + motion (proposed) | 59.0 | 44.1 | 50.5 | 32.0 | 23.9 | 27.4 | – | 74.8 | 621 | 152 | 260 | 9 | 50.7 |
 | InFactory | Detection only | 74.5 | 34.4 | 47.1 | 66.9 | 30.9 | 42.3 | 26.0 | 28.1 | 408 | 0 | 1,042 | 73 | 4.2 |
 | InFactory | Kalman, detected only | 92.5 | 27.8 | 42.8 | 80.1 | 24.1 | 37.0 | – | 18.3 | 266 | 0 | 1,184 | 50 | 4.9 |
 | InFactory | Kalman (YOLO only) | 82.5 | 36.9 | 51.0 | 63.5 | 28.4 | 39.2 | – | 27.2 | 266 | 129 | 1,055 | 33 | 9.9 |
-| InFactory | Kalman + motion (proposed) | 82.5 | 36.9 | 51.0 | 63.5 | 28.4 | 39.2 | – | 27.2 | 266 | 129 | 1,055 | 33 | 9.9 |
-| All (13 seq.) | Detection only | 66.4 | 34.8 | 45.7 | 38.4 | 20.1 | 26.4 | 16.3 | 41.7 | 1,260 | 0 | 1,759 | 175 | 4.8 |
-| All (13 seq.) | Kalman, detected only | 74.5 | 28.0 | 40.7 | 47.7 | 17.9 | 26.1 | – | 29.9 | 903 | 0 | 2,116 | 93 | 7.2 |
-| All (13 seq.) | Kalman (YOLO only) | 71.1 | 35.8 | 47.6 | 39.5 | 19.9 | 26.4 | – | 40.0 | 903 | 306 | 1,810 | 43 | 20.0 |
-| All (13 seq.) | Kalman + motion (proposed) | 70.0 | 36.4 | 47.9 | 39.3 | 20.4 | 26.9 | – | 41.4 | 938 | 311 | 1,770 | 44 | 19.9 |
+| InFactory | Kalman + motion (proposed) | 82.5 | 36.9 | 51.0 | 63.3 | 28.3 | 39.1 | – | 27.2 | 269 | 126 | 1,055 | 33 | 9.9 |
+| All (13 seq.) | Detection only | 67.8 | 42.1 | 51.9 | 40.9 | 25.4 | 31.3 | 20.5 | 47.9 | 1,190 | 0 | 1,293 | 161 | 5.0 |
+| All (13 seq.) | Kalman, detected only | 68.8 | 31.4 | 43.1 | 49.5 | 22.5 | 31.0 | – | 35.2 | 873 | 0 | 1,610 | 82 | 7.3 |
+| All (13 seq.) | Kalman (YOLO only) | 66.6 | 40.1 | 50.0 | 41.9 | 25.2 | 31.5 | – | 46.5 | 873 | 281 | 1,329 | 41 | 18.7 |
+| All (13 seq.) | Kalman + motion (proposed) | 67.0 | 40.8 | 50.7 | 42.6 | 25.9 | 32.2 | – | 47.0 | 890 | 278 | 1,315 | 42 | 18.6 |
 
 ## Fig. 5. Precision, recall and F1 for players and ball
 
@@ -130,13 +130,13 @@ Dev sequence: SportsMOT/v_2QhNRucNC7E_c017. Selected = best HOTA (star in the fi
 | SportsMOT | 81.3 | 92.2 | 86.4 |
 | UVY-Track (recall only) | – | 70.8 | – |
 
-**Ball on UVY-Track: 1518 visible-ball frames (centre within one ball diameter)**
+**Ball on UVY-Track: 1033 visible-ball frames (centre within one ball diameter)**
 
 | Method | Precision | Recall | F1 |
 |---|---|---|---|
-| Detection only | 62.6 | 35.1 | 45.0 |
-| Kalman tracker (YOLO only) | 65.6 | 35.2 | 45.8 |
-| Kalman + motion flights (proposed) | 64.2 | 36.1 | 46.2 |
+| Detection only | 64.3 | 48.7 | 55.4 |
+| Kalman tracker (YOLO only) | 58.2 | 42.8 | 49.3 |
+| Kalman + motion flights (proposed) | 59.0 | 44.1 | 50.5 |
 
 **Ball on InFactory: 884 visible-ball frames (centre within one ball diameter)**
 
@@ -150,13 +150,13 @@ Dev sequence: SportsMOT/v_2QhNRucNC7E_c017. Selected = best HOTA (star in the fi
 
 | Data | Detected frames | Detected prec. (%) | Predicted frames | Predicted prec. (%) |
 |---|---|---|---|---|
-| UVY-Track | 672 | 65.6 | 182 | 58.8 |
-| InFactory | 266 | 92.5 | 129 | 62.0 |
-| All | 938 | 73.2 | 311 | 60.1 |
+| UVY-Track | 621 | 59.4 | 152 | 57.2 |
+| InFactory | 269 | 92.6 | 126 | 61.1 |
+| All | 890 | 69.4 | 278 | 59.0 |
 
 ## Fig. 6. Ball trajectory of the proposed tracker on the free kick of soccer_V04
 
-UVY-Track soccer_V04, 219 frames: 190 detected (by the detector or a motion flight), 7 predicted by the Kalman filter, 22 with no output; ground truth visible in 168 frames. Every 10th frame:
+UVY-Track soccer_V04, 219 frames: 194 detected (by the detector or a motion flight), 10 predicted by the Kalman filter, 15 with no output; ground truth visible in 168 frames. Every 10th frame:
 
 | Frame | Ground truth x | Ground truth y | Tracker status | Tracker x | Tracker y |
 |---|---|---|---|---|---|
@@ -166,8 +166,8 @@ UVY-Track soccer_V04, 219 frames: 190 detected (by the detector or a motion flig
 | 40 | 374 | 410 | detected | 375 | 410 |
 | 50 | 360 | 434 | detected | 360 | 434 |
 | 60 | 366 | 434 | detected | 368 | 434 |
-| 70 | 388 | 438 | detected | 388 | 438 |
-| 80 | 390 | 434 | detected | 390 | 434 |
+| 70 | 388 | 438 | detected | 388 | 437 |
+| 80 | 390 | 434 | detected | 390 | 433 |
 | 90 | 368 | 433 | detected | 368 | 433 |
 | 100 | 358 | 446 | detected | 358 | 445 |
 | 110 | 344 | 442 | detected | 346 | 441 |
@@ -176,19 +176,19 @@ UVY-Track soccer_V04, 219 frames: 190 detected (by the detector or a motion flig
 | 140 | 315 | 463 | detected | 316 | 462 |
 | 150 | 316 | 467 | detected | 316 | 467 |
 | 160 | – | – | detected | 430 | 356 |
-| 170 | 615 | 215 | detected | 618 | 215 |
+| 170 | 615 | 215 | detected | 618 | 216 |
 | 180 | 716 | 184 | detected | 716 | 185 |
-| 190 | – | – | detected | 754 | 236 |
-| 200 | – | – | lost | – | – |
+| 190 | – | – | detected | 756 | 236 |
+| 200 | – | – | predicted | 808 | 344 |
 | 210 | – | – | lost | – | – |
 
 ## Fig. 7. Ball track status per sequence with the proposed tracker
 
 | Sequence | Labelled frames | Detected | Predicted (Kalman) | Lost (no output) | Frames with a visible ball |
 |---|---|---|---|---|---|
-| soccer_V04 (UVY-Track) | 219 | 87% | 3% | 10% | 77% |
-| soccer_V01 (UVY-Track) | 750 | 44% | 14% | 41% | 100% |
-| soccer_V03 (UVY-Track) | 600 | 25% | 11% | 64% | 100% |
+| soccer_V04 (UVY-Track) | 168 | 99% | 0% | 1% | 100% |
+| soccer_V01 (UVY-Track) | 494 | 70% | 19% | 11% | 100% |
+| soccer_V03 (UVY-Track) | 371 | 29% | 15% | 55% | 100% |
 | 032ca2db (InFactory) | 85 | 28% | 16% | 55% | 100% |
 | 0f8fc039 (InFactory) | 243 | 1% | 2% | 97% | 11% |
 | 2e3b6c35 (InFactory) | 588 | 12% | 9% | 79% | 55% |
@@ -197,7 +197,7 @@ UVY-Track soccer_V04, 219 frames: 190 detected (by the detector or a motion flig
 | 71125020 (InFactory) | 35 | 43% | 31% | 26% | 100% |
 | 7d503a7a (InFactory) | 80 | 15% | 24% | 61% | 100% |
 | 81926caa (InFactory) | 40 | 10% | 0% | 90% | 48% |
-| b0558318 (InFactory) | 160 | 34% | 12% | 53% | 80% |
+| b0558318 (InFactory) | 160 | 36% | 11% | 53% | 80% |
 | bd8d9aab (InFactory) | 30 | 0% | 0% | 100% | 3% |
 
 ## Table IX. YOLOv8n versus YOLO11n on the same frames
