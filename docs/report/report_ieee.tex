@@ -8,7 +8,22 @@
 \usepackage{array}
 \usepackage{adjustbox}
 \usepackage{url}
+\usepackage{placeins}
 \graphicspath{{figures/}}
+
+% Float placement: allow more and larger floats per page so that figures and
+% tables stay close to the text that cites them instead of piling up after
+% the references.
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.07}
+\renewcommand{\floatpagefraction}{0.7}
+\renewcommand{\dbltopfraction}{0.9}
+\renewcommand{\dblfloatpagefraction}{0.7}
+\setcounter{topnumber}{3}
+\setcounter{bottomnumber}{2}
+\setcounter{totalnumber}{5}
+\setcounter{dbltopnumber}{3}
 
 \begin{document}
 
@@ -156,7 +171,7 @@ in flight.
 % =============================================================================
 \section{Methodology}
 % =============================================================================
-\begin{figure*}[!t]
+\begin{figure*}[!tp]
 \centering
 \includegraphics[width=0.9\textwidth]{fig_architecture.png}
 \caption{System architecture. A single YOLO11n pass per frame feeds both the
@@ -182,7 +197,7 @@ UVY-Track, 1{,}450 InFactory); Table~\ref{tab:sequences} lists them. Only
 the sequences actually used were downloaded, by reading the remote archives
 selectively.
 
-\begin{table*}[!t]
+\begin{table*}[!tp]
 \caption{Datasets and their role in this work}
 \label{tab:datasets}
 \centering
@@ -200,7 +215,7 @@ Used for & Player tracking (tuning and test) & Player tracking and ball (test) &
 \end{tabular}
 \end{table*}
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \caption{Evaluated sequences (Ball fr.: frames scored for the ball)}
 \label{tab:sequences}
 \centering
@@ -323,7 +338,7 @@ threshold) and the setting with the highest HOTA is kept
 (Table~\ref{tab:params}). Results with one shared, untuned setting are also
 reported.
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \caption{Tracker parameters (n/a: not used by that tracker)}
 \label{tab:params}
 \centering
@@ -395,7 +410,7 @@ player boxes. Recall exceeds 90\% on the SportsMOT test sequences; precision is
 held down by real people who are not annotated, and on UVY-Track it cannot be
 interpreted (Section~\ref{sec:datasets}).
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \caption{Player detection by YOLO11n (confidence $\geq 0.5$, IoU $\geq 0.5$)}
 \label{tab:detection}
 \centering
@@ -428,7 +443,7 @@ keeps tracks alive on low-confidence boxes, which with a benchmark-trained
 detector are occluded players, but with a generic detector are often unannotated
 people at the edge of the pitch. OC-SORT is the weakest associator here.
 
-\begin{table*}[!t]
+\begin{table*}[!tp]
 \caption{Player tracking on the SportsMOT test sequences with identical YOLO11n
 detections. Best value per column and parameter set in bold; lower is better for
 IDSW, FP, FN and Frag}
@@ -454,7 +469,7 @@ YOLO11n + ByteTrack (proposed) & 63.3 & 59.4 & 67.4 & 52.9 & 67.8 & \textbf{43} 
 \end{adjustbox}
 \end{table*}
 
-\begin{figure*}[!t]
+\begin{figure*}[!tp]
 \centering
 \includegraphics[width=0.86\textwidth]{fig_tracking_accuracy.png}
 \caption{Tracking accuracy with tuned parameters. Left: HOTA, MOTA and IDF1 on
@@ -470,7 +485,7 @@ looked best for OC-SORT there and then cost it on the test sequences
 (Fig.~\ref{fig:tuning}); tuning on a single sequence is a limitation of this
 study.
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{fig_idsw_frag.png}
 \caption{Identity switches and fragmentations on the test sequences (lower is
@@ -478,7 +493,7 @@ better).}
 \label{fig:idsw}
 \end{figure}
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.9\columnwidth]{fig_tuning.png}
 \caption{HOTA on the tuning sequence for the 48 settings of each tracker. Star:
@@ -493,7 +508,7 @@ the fewest identity switches (24), whereas OC-SORT has nearly twice
 as many (47). Fig.~\ref{fig:idsw} summarises identity stability
 on both datasets.
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \caption{Player tracking on UVY-Track (tuned parameters); only metrics that do
 not count false positives}
 \label{tab:uvy}
@@ -520,7 +535,7 @@ on SportsMOT and are scored on the full test set, whereas our detector has never
 seen SportsMOT and is scored on three football validation sequences. The
 comparison places the project in context; it is not a leaderboard entry.
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \caption{Published SportsMOT test results~\cite{sportsmot,deepeiou,diffmot}
 and ours ($^{*}$: detector trained on train+val)}
 \label{tab:sota}
@@ -556,7 +571,7 @@ Deep-EIoU$^{*}$ & 77.2 & 88.2 & 67.7 & 96.3 & 79.8 \\
 \end{adjustbox}
 \end{table}
 
-\begin{figure*}[!t]
+\begin{figure*}[!tp]
 \centering
 \includegraphics[width=\textwidth]{fig_sota.png}
 \caption{Left: HOTA of published SportsMOT results and of our trackers. Right:
@@ -579,13 +594,21 @@ is far ahead of ByteTrack (71.9 against 62.8), with ours
 it is behind. Both observations point to the detector, not the association
 algorithm, as the component to improve.
 
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{fig_detection_prf.png}
+\caption{Precision, recall and F1 for player detection (left) and for the ball
+on UVY-Track and InFactory (distance criterion).}
+\label{fig:prf}
+\end{figure*}
+
 \subsection{Ball detection and tracking}
 Table~\ref{tab:ball} and Fig.~\ref{fig:prf} compare four ball outputs on the same
 candidates: the most confident detection per frame (detection only), the
 detections accepted by the Kalman tracker, the full Kalman tracker, and the
 Kalman tracker with motion flights.
 
-\begin{table*}[!t]
+\begin{table*}[!tp]
 \caption{Ball results on identical candidates. Coverage: share of scored frames
 with an output. Frames: detected, predicted, no output. Segments: number and
 mean length of correctly tracked segments}
@@ -618,14 +641,6 @@ All (13 seq.) & Kalman + motion (proposed) & 67.0 & 40.8 & 50.7 & 42.6 & 25.9 & 
 \end{adjustbox}
 \end{table*}
 
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{fig_detection_prf.png}
-\caption{Precision, recall and F1 for player detection (left) and for the ball
-on UVY-Track and InFactory (distance criterion).}
-\label{fig:prf}
-\end{figure*}
-
 The detector limits everything that follows: the COCO \emph{sports ball} class
 finds the ball in well under half of the frames in which it is visible, and the
 average precision of all its candidates is only 20.5\%. On the held-out
@@ -639,7 +654,7 @@ is continuity: 161 short, correctly tracked pieces merge into
 precise than predicted positions (69.4\% against 59.0\%), which is
 why predictions are reported separately (Table~\ref{tab:ballpred}).
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \caption{Kalman tracker with motion flights: precision of detected and of
 predicted ball positions (distance criterion)}
 \label{tab:ballpred}
@@ -668,7 +683,7 @@ were developed on UVY-Track clips, this is not held-out evidence, and on the
 held-out InFactory clips the flights left the distance-criterion results
 unchanged.
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{fig_ball_trajectory.png}
 \caption{Ball trajectory on \texttt{soccer\_V04} with the ground truth. Dots:
@@ -677,13 +692,21 @@ axis: frames without output.}
 \label{fig:balltraj}
 \end{figure}
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{fig_ball_status.png}
 \caption{Share of detected, predicted and missing ball outputs per sequence.
 Diamonds: share of frames with a visible ball.}
 \label{fig:ballstatus}
 \end{figure}
+
+\begin{figure*}[!tp]
+\centering
+\includegraphics[width=\textwidth]{fig_runtime.png}
+\caption{Runtime: tracking stage alone (left), full pipeline throughput (centre)
+and time per stage (right).}
+\label{fig:runtime}
+\end{figure*}
 
 \subsection{Detector comparison}
 YOLOv8n and YOLO11n were compared with identical settings on the first 200
@@ -693,7 +716,7 @@ by frame. YOLO11n detects players more precisely and is faster; for the ball the
 two are practically equal. The sample is small, but it supports the choice of
 YOLO11n.
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \caption{YOLOv8n versus YOLO11n on the same frames}
 \label{tab:models}
 \centering
@@ -721,7 +744,7 @@ stage 30\% (53~ms), while ByteTrack needs only
 and the system is an offline analysis tool on this hardware. On battery power
 the laptop processor throttles and throughput drops markedly.
 
-\begin{table}[!t]
+\begin{table}[!htbp]
 \caption{Median processing time per frame}
 \label{tab:runtime}
 \centering
@@ -748,21 +771,13 @@ Player filter + OC-SORT (baseline) & 1.59 & -- \\
 \end{adjustbox}
 \end{table}
 
-\begin{figure*}[!t]
-\centering
-\includegraphics[width=\textwidth]{fig_runtime.png}
-\caption{Runtime: tracking stage alone (left), full pipeline throughput (centre)
-and time per stage (right).}
-\label{fig:runtime}
-\end{figure*}
-
 \subsection{Qualitative results}
 Fig.~\ref{fig:demo} shows a frame of the annotated output for the UVY-Track
 clip \texttt{soccer\_V04}. Figs.~\ref{fig:trajectories} and~\ref{fig:heatmap}
 show player trajectories and a position heatmap for a SportsMOT sequence, both
 in image coordinates.
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{fig_demo_screenshot.png}
 \caption{Annotated output: player identities and trails, the ball and its recent
@@ -770,7 +785,7 @@ path, and a status line.}
 \label{fig:demo}
 \end{figure}
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{fig_player_trajectories.png}
 \caption{Player trajectories from ByteTrack over 75 frames of a SportsMOT test
@@ -779,16 +794,34 @@ annotated in the benchmark.}
 \label{fig:trajectories}
 \end{figure}
 
-\begin{figure}[!t]
+\begin{figure}[!htbp]
 \centering
 \includegraphics[width=\columnwidth]{fig_player_heatmap.png}
 \caption{Player-position heatmap for the same sequence.}
 \label{fig:heatmap}
 \end{figure}
 
+% Output every pending Results figure/table before the Discussion starts.
+\FloatBarrier
+
 % =============================================================================
 \section{Discussion and Limitations}
 % =============================================================================
+\begin{table*}[!tp]
+\caption{Individual contributions}
+\label{tab:contrib}
+\centering
+\footnotesize
+\begin{tabular}{@{}p{3.4cm}p{9.2cm}p{3.6cm}@{}}
+\toprule
+Member & Main responsibilities & Answers for in the viva \\
+\midrule
+Pulapa Yaswanth Kumar & Core application (video input and output, YOLO detection, filters, ByteTrack player tracking, the first Kalman ball tracker, visualisation, CSV and JSON export, command-line interface); baseline trackers and the fair comparison protocol; dataset loaders; evaluation framework; experiment runner, plots and database; automated tests; first full experiment run & ByteTrack, SORT and OC-SORT; Kalman filter; metrics; datasets \\
+Ravva Siddhartha & Motion flights for the ball in flight (camera-motion compensation, frame differencing, flight linking); hardening of the Kalman ball tracker; integration of motion flights into the experiments; final regenerated results and result videos; IEEE paper (related work, references) & Motion stage and flight rules; final results; ball tracking changes \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 The experiments separate the contribution of the tracker from that of the
 detector, and the detector dominates. Its generic \emph{person} class responds
 to everybody in view, so the tracker that keeps the most tracks alive is also
@@ -809,21 +842,6 @@ runs at a few frames per second on a CPU.
 Table~\ref{tab:contrib} lists who owned each part of the work; the full
 component list with the supporting commits is kept in the project repository.
 
-\begin{table*}[!t]
-\caption{Individual contributions}
-\label{tab:contrib}
-\centering
-\footnotesize
-\begin{tabular}{@{}p{3.4cm}p{9.2cm}p{3.6cm}@{}}
-\toprule
-Member & Main responsibilities & Answers for in the viva \\
-\midrule
-Pulapa Yaswanth Kumar & Core application (video input and output, YOLO detection, filters, ByteTrack player tracking, the first Kalman ball tracker, visualisation, CSV and JSON export, command-line interface); baseline trackers and the fair comparison protocol; dataset loaders; evaluation framework; experiment runner, plots and database; automated tests; first full experiment run & ByteTrack, SORT and OC-SORT; Kalman filter; metrics; datasets \\
-Ravva Siddhartha & Motion flights for the ball in flight (camera-motion compensation, frame differencing, flight linking); hardening of the Kalman ball tracker; integration of motion flights into the experiments; final regenerated results and result videos; IEEE paper (related work, references) & Motion stage and flight rules; final results; ball tracking changes \\
-\bottomrule
-\end{tabular}
-\end{table*}
-
 % =============================================================================
 \section{Conclusion and Future Work}
 % =============================================================================
@@ -842,6 +860,9 @@ Further steps are tiled high-resolution inference for the ball, a motion model
 that can handle direction changes, camera-motion compensation and
 re-identification for players, team assignment, and an evaluation on the full
 benchmark splits.
+
+% No figure or table may be placed after the references.
+\FloatBarrier
 
 % =============================================================================
 \begin{thebibliography}{00}
