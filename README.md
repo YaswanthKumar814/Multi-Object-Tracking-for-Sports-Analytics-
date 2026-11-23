@@ -10,6 +10,8 @@ against YOLO11n + SORT and YOLO11n + OC-SORT on three public datasets
 | [DATASETS.md](DATASETS.md) | Dataset sources, formats, the exact subsets used, download commands |
 | [CONTRIBUTIONS.md](CONTRIBUTIONS.md) | Who did what: component owners, evidence commits, viva accountability |
 | [poster.pptx](poster.pptx), [poster.pdf](poster.pdf) | Single-page project poster (48 x 36 in), rebuilt from the results with `python scripts/make_poster.py` |
+| [Project_Presentation.pptx](Project_Presentation.pptx) | Presentation on the institution template, with speaker notes; rebuilt with `python scripts/make_template_presentation.py` |
+| [docs/report/](docs/report/) | Project report in two LaTeX formats with the same content: `report_ieee.tex` (IEEE, two columns) and `report_single_column.tex`, each with an Overleaf zip; rebuilt with `python scripts/make_reports.py` |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
 | [presentation.pptx](presentation.pptx), [docs/PRESENTATION_NOTES.md](docs/PRESENTATION_NOTES.md) | Slides and speaker notes |
 | [results/](results/) | Metrics (CSV/JSON), plots (PNG), SQLite database, demo outputs |
