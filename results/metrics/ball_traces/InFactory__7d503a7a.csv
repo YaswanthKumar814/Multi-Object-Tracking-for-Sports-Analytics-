@@ -4,7 +4,7 @@ frame,labelled,ball_visible,gt_cx,gt_cy,num_candidates,det_cx,det_cy,det_conf,de
 3,True,True,647.0,629.5,1,646.57,629.01,0.9281,True,648.09,629.61,detected,0,True,648.09,629.61,detected,True
 4,True,True,171.5,240.0,0,,,,,630.79,631.93,predicted,0,False,630.79,631.93,predicted,False
 5,True,True,167.0,239.5,0,,,,,613.48,634.26,predicted,0,False,613.48,634.26,predicted,False
-6,True,True,161.0,238.5,1,364.9,357.08,0.4099,False,596.17,636.59,predicted,0,False,596.17,636.59,predicted,False
+6,True,True,161.0,238.5,1,364.9,357.08,0.41,False,596.17,636.59,predicted,0,False,596.17,636.59,predicted,False
 7,True,True,159.0,240.0,0,,,,,578.86,638.92,predicted,0,False,578.86,638.92,predicted,False
 8,True,True,149.5,239.5,3,891.56,299.18,0.2459,False,561.55,641.25,predicted,0,False,561.55,641.25,predicted,False
 9,True,True,147.0,240.5,1,891.77,298.61,0.4217,False,544.24,643.58,predicted,0,False,544.24,643.58,predicted,False
@@ -77,5 +77,5 @@ frame,labelled,ball_visible,gt_cx,gt_cy,num_candidates,det_cx,det_cy,det_conf,de
 76,True,True,364.0,214.0,0,,,,,,,lost,,,,,lost,
 77,True,True,346.0,213.5,0,,,,,,,lost,,,,,lost,
 78,True,True,330.5,214.5,0,,,,,,,lost,,,,,lost,
-79,True,True,321.0,215.5,1,322.29,216.13,0.3106,True,,,lost,,,,,lost,
+79,True,True,321.0,215.5,1,322.29,216.12,0.3106,True,,,lost,,,,,lost,
 80,True,True,305.0,219.0,1,305.6,220.16,0.1123,True,306.0,220.06,detected,3,True,306.0,220.06,detected,True

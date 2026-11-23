@@ -129,7 +129,7 @@ frame,labelled,ball_visible,gt_cx,gt_cy,num_candidates,det_cx,det_cy,det_conf,de
 128,True,True,508.97,364.25,1,509.73,364.3,0.4626,True,509.73,364.3,detected,1,True,509.73,364.3,detected,True
 129,True,True,508.77,364.52,1,510.1,365.15,0.6949,True,510.04,365.03,detected,1,True,510.04,365.03,detected,True
 130,True,True,508.74,364.65,1,509.31,365.44,0.4541,True,509.53,365.47,detected,1,True,509.53,365.47,detected,True
-131,True,True,508.48,364.89,1,509.18,365.67,0.6915,True,509.21,365.74,detected,1,True,509.21,365.74,detected,True
+131,True,True,508.48,364.89,1,509.18,365.67,0.6916,True,509.21,365.74,detected,1,True,509.21,365.74,detected,True
 132,True,True,508.21,364.81,1,508.85,365.56,0.424,True,508.87,365.69,detected,1,True,508.87,365.69,detected,True
 133,True,True,508.21,364.89,1,508.75,365.85,0.3334,True,508.7,365.83,detected,1,True,508.7,365.83,detected,True
 134,True,True,508.46,365.08,1,508.97,365.91,0.3445,True,508.84,365.92,detected,1,True,508.84,365.92,detected,True

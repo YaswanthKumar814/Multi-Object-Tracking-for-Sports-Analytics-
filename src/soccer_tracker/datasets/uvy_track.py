@@ -23,6 +23,26 @@ Notes from inspecting the data:
 * Rows with a negative track id are annotation leftovers and are dropped.
 * ``video_info.txt`` can be wrong (soccer_V01 names a different sequence), so
   the image size and frame rate are read from the video itself.
+
+Ball ground truth: which frames can be scored
+---------------------------------------------
+UVY-Track does not annotate the *absence* of the ball, and not every ball row
+is a real position:
+
+* A ball row with ``visibility = 0`` is not where the ball is. Checked on
+  soccer_V03 (frames 285 and 367): the box sits on empty grass, with the same
+  size as the previous keyframe, while the ball is in a player's hands or at
+  his feet. These rows look like positions carried forward by the annotation
+  tool, so they are neither a target nor proof that the ball is hidden.
+* Frames with no ball row at all are unknown, not "ball not visible": in
+  soccer_V04 the ball is unlabelled while it is in flight (frames 156-166,
+  between two labelled positions on the same arc) and after the goal (from
+  frame 181 on), although it is visible.
+
+So a frame is scored for the ball only when it has a ball row with
+``visibility > 0``. On UVY-Track this measures recall and wrong-position
+errors; false alarms on ball-free frames are measured on InFactory, which
+labels "ball not visible" frames explicitly. See ``ball_scoring_summary``.
 """
 
 from __future__ import annotations
@@ -104,20 +124,39 @@ class UVYTrackSequence(Sequence):
         out[:, 0] -= self.first - 1
         return out
 
-    def ball_gt(self) -> dict[int, np.ndarray]:
+    def _ball_rows(self, valid_only: bool = True) -> np.ndarray:
         r = self._rows[np.isin(self._rows[:, 7].astype(int), self._class_ids((BALL_CLASS,)))]
+        return r[r[:, 8] > 0] if valid_only else r
+
+    def ball_gt(self) -> dict[int, np.ndarray]:
+        """Ball boxes from rows with ``visibility > 0`` (see the module docstring)."""
         out: dict[int, list] = {}
-        for row in r:
+        for row in self._ball_rows():
             x, y, w, h = row[2:6]
             out.setdefault(int(row[0]) - self.first + 1, []).append([x, y, x + w, y + h])
         return {f: np.asarray(b, dtype=np.float64) for f, b in out.items()}
 
     def ball_track_ids(self) -> dict[int, int]:
         """Frame -> ground-truth ball track id (the dataset labels one ball per frame)."""
-        r = self._rows[np.isin(self._rows[:, 7].astype(int), self._class_ids((BALL_CLASS,)))]
-        return {int(row[0]) - self.first + 1: int(row[1]) for row in r}
+        return {int(row[0]) - self.first + 1: int(row[1]) for row in self._ball_rows()}
 
     def ball_labelled_frames(self) -> Optional[set[int]]:
-        # A frame is trusted as "ball not visible" only if something else was
-        # annotated in it; frames with no rows at all may simply be unlabelled.
-        return {int(f) - self.first + 1 for f in np.unique(self._rows[:, 0])}
+        """Frames scored for the ball: those with a valid ball row.
+
+        UVY-Track never marks the ball as absent, so no frame here is a
+        "ball not visible" frame; frames without a valid ball row are unknown
+        and are left out of the ball scores.
+        """
+        return {int(row[0]) - self.first + 1 for row in self._ball_rows()}
+
+    def ball_scoring_summary(self) -> dict:
+        """How many evaluated frames are scored for the ball, and why the others are not."""
+        all_ball = self._ball_rows(valid_only=False)
+        frames_with_row = {int(f) - self.first + 1 for f in all_ball[:, 0]}
+        scored = self.ball_labelled_frames() or set()
+        return {
+            "frames_evaluated": self.info.num_frames,
+            "frames_scored": len(scored),
+            "frames_ball_row_visibility_0": len(frames_with_row - scored),
+            "frames_without_ball_row": self.info.num_frames - len(frames_with_row),
+        }
