@@ -237,7 +237,11 @@ def plot_runtime(manifest: Manifest, out: Path) -> None:
     group = "All test sequences"
     bench = read_json(manifest.results_dir / "metrics" / "runtime_benchmark.json")
     info = bench["system"]
-    fig, axes = plt.subplots(1, 3, figsize=(16.5, 4.2), gridspec_kw={"width_ratios": [1, 1, 1.35], "wspace": 0.55})
+    # Constrained layout reserves room for the long stage names on the right
+    # panel, so they can no longer run into the bars of the middle panel.
+    fig, axes = plt.subplots(1, 3, figsize=(16.5, 4.6), layout="constrained",
+                             gridspec_kw={"width_ratios": [1, 1, 1.35]})
+    fig.get_layout_engine().set(w_pad=0.15, wspace=0.08)
     labels = [SHORT_LABELS[a] for a in ALGORITHMS]
     colors = [TRACKER_COLORS[a] for a in ALGORITHMS]
 
@@ -264,20 +268,23 @@ def plot_runtime(manifest: Manifest, out: Path) -> None:
     stages = [(k, v["median_ms"]) for k, v in bench["stages"].items()
               if not (k.startswith("player filter") and "ByteTrack" not in k)]
     stages.sort(key=lambda kv: kv[1])
-    names = [k for k, _ in stages]
+    import textwrap
+
+    names = [textwrap.fill(k, 26) for k, _ in stages]
     ms = [v for _, v in stages]
-    axes[2].barh(names, ms, 0.55, color=["#2a78d6" if k == "detection" else BASELINE_GRAY for k in names], linewidth=0)
+    axes[2].barh(names, ms, 0.55, color=["#2a78d6" if k == "detection" else BASELINE_GRAY for k, _ in stages], linewidth=0)
     for i, v in enumerate(ms):
         axes[2].text(v + max(ms) * 0.01, i, f"{v:.2f} ms", va="center", fontsize=8.5)
-    axes[2].set_xlim(0, max(ms) * 1.2)
+    axes[2].set_xlim(0, max(ms) * 1.22)
+    axes[2].tick_params(axis="y", length=0, labelsize=8.5)
     axes[2].set_xlabel("Median time per frame (ms)")
     axes[2].set_ylabel("")
     axes[2].grid(axis="y", visible=False)
     axes[2].grid(axis="x", visible=True)
-    axes[2].set_title("Where the time goes: %d frames of %s" % (bench["frames"], bench["sequence"].split("/")[1]))
+    axes[2].set_title("Where the time goes\n(%d frames of %s)" % (bench["frames"], bench["sequence"].split("/")[1]))
     fig.suptitle("Runtime on %s (device: %s, %s px input)" % (info.get("cpu", "CPU"), info.get("device", "cpu"),
                                                              bench["detector"].split("_")[-1]),
-                 fontsize=12, fontweight="bold", y=1.03)
+                 fontsize=12, fontweight="bold")
     _save(fig, out)
 
 
