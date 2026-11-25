@@ -6,14 +6,9 @@ against YOLO11n + SORT and YOLO11n + OC-SORT on three public datasets
 
 | Document | Contents |
 |---|---|
-| [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md) | Full report: method, datasets, baseline comparison, metrics, plots, limitations |
 | [DATASETS.md](DATASETS.md) | Dataset sources, formats, the exact subsets used, download commands |
 | [CONTRIBUTIONS.md](CONTRIBUTIONS.md) | Who did what: component owners, evidence commits, viva accountability |
-| [poster.pptx](poster.pptx), [poster.pdf](poster.pdf) | Single-page project poster (48 x 36 in), rebuilt from the results with `python scripts/make_poster.py` |
-| [Project_Presentation.pptx](Project_Presentation.pptx) | Presentation on the institution template, with speaker notes; rebuilt with `python scripts/make_template_presentation.py` |
-| [docs/report/](docs/report/) | Project report in two LaTeX formats with the same content: `report_ieee.tex` (IEEE, two columns) and `report_single_column.tex`, each with an Overleaf zip; rebuilt with `python scripts/make_reports.py` |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | System design |
-| [presentation.pptx](presentation.pptx), [docs/PRESENTATION_NOTES.md](docs/PRESENTATION_NOTES.md) | Slides and speaker notes |
 | [results/](results/) | Metrics (CSV/JSON), plots (PNG), SQLite database, demo outputs |
 
 The application detects players and the ball in a local soccer video, tracks player
@@ -148,12 +143,7 @@ That runs, in order (each stage can also be run on its own by name):
 | `plots` | All figures | `results/plots/*.png` |
 | `db` | Rebuilds the SQLite database from the result files | `results/sports_analytics.db` |
 
-```bash
-python scripts/make_report_tables.py
-```
-
-regenerates `results/tables.md` and refreshes the tables in the report from the metrics
-files. Which sequences and frame ranges are used is fixed in
+Which sequences and frame ranges are used is fixed in
 [`configs/experiments.yaml`](configs/experiments.yaml).
 
 **Evaluators.** Player-tracking metrics come from `trackers.eval` (Roboflow `trackers`
@@ -225,8 +215,8 @@ the held-out InFactory clips (F1 51.0 vs 47.1, precision 82.5 vs 74.5) but not o
 42). Motion flights follow a struck ball the detector loses (UVY-Track `soccer_V04`: recall
 91.1% to 99.4% at 100% precision) and change nothing on the other 12 sequences. The generic COCO detector is the main limit on
 accuracy and takes most of the time (5.7 FPS on an Apple M1 CPU, 64% detector, 30% ball
-motion stage). Full results,
-plots and discussion: [docs/FINAL_REPORT.md](docs/FINAL_REPORT.md).
+motion stage). All figures are in [`results/plots/`](results/plots/) and the underlying
+numbers in [`results/metrics/`](results/metrics/).
 
 ### Comparison with the state of the art
 
@@ -440,9 +430,9 @@ pytest -m integration     # real-model tests (needs weights; run the CLI once to
 ```
 soccer-tracker/
 ├── configs/            default.yaml, soccer_finetuned.example.yaml, experiments.yaml (experiment manifest)
-├── docs/               FINAL_REPORT.md, PRESENTATION_NOTES.md, ARCHITECTURE.md
-├── scripts/            run_experiments.py, make_report_tables.py, make_presentation.py,
-│                       fetch_zip_subset.py, visualize_run.py, frames_to_video.py, make_synthetic_video.py
+├── docs/               ARCHITECTURE.md
+├── scripts/            run_experiments.py (experiments and all figures), visualize_run.py (demo figures),
+│                       fetch_zip_subset.py, frames_to_video.py, make_synthetic_video.py
 ├── src/soccer_tracker/
 │   ├── cli.py, __main__.py, config.py, errors.py
 │   ├── video_io.py, pipeline.py, visualization.py, analytics.py, synthetic.py
@@ -452,9 +442,9 @@ soccer-tracker/
 │   ├── evaluation/     mot.py (trackers.eval wrapper), detection.py, ball.py (custom evaluators)
 │   └── experiments/    manifest, detections (cache), players, ball, models, runtime, plots, database
 ├── tests/              unit, smoke, and integration tests
-├── results/            metrics/, plots/, tracks/, demo/, tables.md, sports_analytics.db
+├── results/            metrics/, plots/, tracks/, demo/, sports_analytics.db
 ├── data/               datasets (git-ignored; see DATASETS.md)
 ├── weights/            model files (git-ignored)
-├── DATASETS.md, presentation.pptx
+├── DATASETS.md, CONTRIBUTIONS.md
 ├── requirements.txt, requirements-dev.txt, pyproject.toml
 ```
